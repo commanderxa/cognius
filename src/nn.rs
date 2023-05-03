@@ -60,9 +60,9 @@ impl Neuron {
 
 impl Module for Neuron {
     fn parameters(&self) -> Vec<Value> {
-        let mut w = self.w.clone();
-        w.push(self.b.clone());
-        w
+        let mut parameters = self.w.clone();
+        parameters.push(self.b.clone());
+        parameters
     }
 }
 

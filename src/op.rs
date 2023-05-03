@@ -1,4 +1,5 @@
 #[derive(Clone)]
+/// Operations that are available to apply to `Value`.
 pub enum Op {
     Add,
     Mul,
