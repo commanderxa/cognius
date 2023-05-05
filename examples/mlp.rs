@@ -1,11 +1,12 @@
-use minigrad::{Value, MLP, nn::Module};
+use minigrad::{nn::Module, Value, MLP};
 
 fn main() {
-    let mlp = MLP::new(4, vec![10, 20, 10, 1]);
+    let mlp = MLP::new(4, vec![100, 20, 10, 5, 1]);
     let data = Value::from_vec(vec![0.5, 1.0, 1.5, 2.0]);
     let target = Value::from(2.0);
 
-    let epochs = 1000;
+    let epochs = 100;
+    let lr = 0.02;
     let model_size = mlp.parameters().len();
     println!("Model is of size {model_size} parameters");
     println!("Training on {epochs} epochs...");
@@ -26,7 +27,7 @@ fn main() {
 
         // optimization step
         for p in mlp.parameters() {
-            p.add_data(-0.2 * p.get_grad());
+            p.add_data(-lr * p.get_grad());
         }
 
         // println!("{epoch}/{epochs} | Loss: {0}", loss.get_data());

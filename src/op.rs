@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 /// Operations that are available to apply to `Value`.
 pub enum Op {
     Add,

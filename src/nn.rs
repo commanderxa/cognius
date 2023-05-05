@@ -20,12 +20,14 @@ impl Neuron {
         let mut weights = Vec::with_capacity(in_features);
         for _ in 0..in_features {
             let data = rand::thread_rng().gen_range(-1.0..1.0);
-            let value = Value::from(data);
-            weights.push(value);
+            let weight: Value = Value::from(data);
+            weights.push(weight);
         }
+        let data = rand::thread_rng().gen_range(-1.0..1.0);
+        let bias = Value::from(data);
         Self {
             w: weights,
-            b: Value::from(0.0),
+            b: bias,
             nonlin: false,
         }
     }
@@ -108,8 +110,8 @@ impl Linear {
 impl Module for Linear {
     fn parameters(&self) -> Vec<Value> {
         let mut parameters = Vec::new();
-        for n in &self.neurons {
-            for p in n.parameters() {
+        for neuron in &self.neurons {
+            for p in neuron.parameters() {
                 parameters.push(p);
             }
         }
@@ -140,9 +142,9 @@ impl MLP {
             .into_iter()
             .chain(out_features.into_iter())
             .collect();
-        for i in 0..sz.len() {
-            let nonlin = i != sz.len() - 1;
-            layers.push(Linear::new(i, i + 1, nonlin));
+        for i in 0..sz.len() - 1 {
+            let nonlin = i != sz.len() - 2;
+            layers.push(Linear::new(sz[i], sz[i + 1], nonlin));
         }
         Self { layers }
     }
