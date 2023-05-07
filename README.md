@@ -18,4 +18,5 @@ e.g. `cargo run --example simple`
 
 ## License
 
-See `LICENSE.txt`.
+Licensed under the MIT license. 
+See the `LICENSE.txt`.

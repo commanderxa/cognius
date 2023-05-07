@@ -1,23 +1,38 @@
+use crate::{op::Op, Tensor};
+
 /// # TensorData
-/// 
+///
 /// ### This type holds the data of the tensor, and is an actual data.
-/// 
+///
 /// `Tensor` holds a reference to it, allowing to use the same data.\
 /// See the documentation for `Tensor`.
 pub struct TensorData {
+    // stored data
+    // it is a single vector that is viewed regarding the shape
     pub data: Vec<f64>,
-    pub grad: Vec<f64>,
+    // gradients
+    pub grad: Option<Vec<f64>>,
+    // shape of the tensor
     pub shape: Vec<usize>,
+    // vector of the tensors that were used to produce this tensor
+    pub _prev: Vec<Tensor>,
+    // backward function
+    pub _backward: Option<fn(tensor: Tensor)>,
+    // operation that was used to produce this tensor
+    pub _op: Option<Op>,
 }
 
 impl TensorData {
     /// Create a new instance of the TensorData.
-    pub fn new(dims: Vec<usize>) -> Self {
-        let len = dims.iter().product();
+    pub fn new(shape: Vec<usize>) -> Self {
+        let len = shape.iter().product();
         Self {
             data: vec![0.0; len],
-            grad: vec![0.0; len],
-            shape: dims,
+            grad: Some(vec![0.0; len]),
+            shape: shape,
+            _prev: vec![],
+            _backward: None,
+            _op: None,
         }
     }
 
@@ -34,8 +49,30 @@ impl TensorData {
         Self::fill_grad(&mut grad);
         Self {
             data: data,
-            grad: grad,
+            grad: Some(grad),
             shape: shape,
+            _prev: vec![],
+            _backward: None,
+            _op: None,
+        }
+    }
+
+    pub fn from_op(
+        data: Vec<f64>,
+        shape: Vec<usize>,
+        prev: Vec<Tensor>,
+        backward: fn(Tensor),
+        op: Op,
+    ) -> Self {
+        let mut grad = Vec::with_capacity(data.len());
+        Self::fill_grad(&mut grad);
+        Self {
+            data: data,
+            grad: Some(grad),
+            shape: shape,
+            _prev: prev,
+            _backward: Some(backward),
+            _op: Some(op),
         }
     }
 }
