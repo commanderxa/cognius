@@ -7,6 +7,10 @@ fn main() {
     // let res = Tensor::mm(tensor, tensor2);
     // println!("{}\n", tensor2);
     // let res = tensor.mm(tensor2.t());
-    let res = Tensor::arange(1., 6., 1.);
+    let res = Tensor::arange(0., 6., 1.);
+    let res2 = Tensor::arange(0., 6., 1.);
     println!("{}", res);
+    println!("{}", res.view(vec![2, 3]));
+    res2.reshape(vec![2, 3]);
+    println!("{}", res2);
 }

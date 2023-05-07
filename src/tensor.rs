@@ -172,6 +172,32 @@ impl Tensor {
         result
     }
 
+    /// Returns the tensor of the new shape.
+    pub fn view(&self, shape: Vec<usize>) -> Self {
+        assert_eq!(
+            self.length(), 
+            shape.iter().product(), 
+            "Length of the new shape: {} does not match the length of the old one: {}", 
+            shape.iter().product::<usize>(), 
+            self.length()
+        );
+        let tensor_data = TensorData::from_f64(self.item(), shape);
+        let tensor = Rc::new(RefCell::new(tensor_data));
+        Self { data: tensor }
+    }
+
+    /// Reshapes the tensor.
+    pub fn reshape(&self, shape: Vec<usize>) {
+        assert_eq!(
+            self.length(), 
+            shape.iter().product(), 
+            "Length of the new shape: {} does not match the length of the old one: {}", 
+            shape.iter().product::<usize>(), 
+            self.length()
+        );
+        self.data.borrow_mut().shape = shape;
+    }
+
     fn tensor_to_str(&self, tensor_str: String, level: usize, range: Range<usize>) -> String {
         // the length of the range
         let len: usize = range.end - range.start;
@@ -184,8 +210,9 @@ impl Tensor {
 
         // denote the start of the dimension
         let mut result = String::from("[");
-        // iterate over the dimension
+        // iterate over the dimension => print a vector
         for i in (range.start..range.end).step_by(conv) {
+            // if the dimension is the last one
             if shape_size - 1 == level {
                 let mut num = format!("{:.4}", self.data.borrow().data[i]);
                 if i < self.shape()[level] - 1 {
@@ -193,7 +220,7 @@ impl Tensor {
                 }
                 result.push_str(num.as_str());
             }
-            // if the iteration is over the last 2 dimensions => produce a matrix
+            // if the iteration is over the last 2 dimensions => print a matrix
             else if shape_size - 2 == level {
                 result.push_str("[");
                 for j in 0..self.shape()[level + 1] {
