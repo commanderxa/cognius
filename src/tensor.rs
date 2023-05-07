@@ -1,12 +1,18 @@
 use std::{
     cell::RefCell,
-    fmt::Display,
     ops::{Add, Mul, Neg, Range},
-    rc::Rc,
+    rc::Rc, fmt::Display,
 };
 
 use rand::Rng;
 
+use crate::tensor_data::TensorData;
+
+/// # Tensor
+/// 
+/// ### Holds the reference to the inner data inside.
+/// 
+/// See the documentation for the TensorData.
 pub struct Tensor {
     data: Rc<RefCell<TensorData>>,
 }
@@ -198,6 +204,7 @@ impl Tensor {
         self.data.borrow_mut().shape = shape;
     }
 
+    /// Converts the tensor to a `String`, so that it can be printed.
     fn tensor_to_str(&self, tensor_str: String, level: usize, range: Range<usize>) -> String {
         // the length of the range
         let len: usize = range.end - range.start;
@@ -343,40 +350,6 @@ impl Neg for Tensor {
     fn neg(self) -> Self::Output {
         let negative = Tensor::from_f64(vec![-1.0], vec![1]);
         self * negative
-    }
-}
-
-struct TensorData {
-    data: Vec<f64>,
-    grad: Vec<f64>,
-    shape: Vec<usize>,
-}
-
-impl TensorData {
-    fn new(dims: Vec<usize>) -> Self {
-        let len = dims.iter().product();
-        Self {
-            data: vec![0.0; len],
-            grad: vec![0.0; len],
-            shape: dims,
-        }
-    }
-
-    /// Sets the gradients to 0.
-    fn fill_grad(tensor: &mut Vec<f64>) {
-        for _ in 0..tensor.len() {
-            tensor.push(0.0);
-        }
-    }
-
-    fn from_f64(data: Vec<f64>, shape: Vec<usize>) -> Self {
-        let mut grad = Vec::with_capacity(data.len());
-        Self::fill_grad(&mut grad);
-        Self {
-            data: data,
-            grad: grad,
-            shape: shape,
-        }
     }
 }
 

@@ -1,4 +1,4 @@
-use minigrad::tensor::Tensor;
+use minigrad::Tensor;
 
 fn main() {
     // let tensor = Tensor::from_f64(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]);
