@@ -1,6 +1,7 @@
-mod op;
-pub mod value;
 pub mod nn;
+mod op;
+pub mod tensor;
+pub mod value;
 
-pub use value::Value;
 pub use nn::MLP;
+pub use value::Value;
