@@ -1,12 +1,13 @@
 use crate::{op::Op, Tensor};
 
+#[derive(Debug, PartialEq)]
 /// # TensorData
 ///
 /// ### This type holds the data of the tensor, and is an actual data.
 ///
 /// `Tensor` holds a reference to it, allowing to use the same data.\
 /// See the documentation for `Tensor`.
-pub struct TensorData {
+pub(crate) struct TensorData {
     // stored data
     // it is a single vector that is viewed regarding the shape
     pub data: Vec<f64>,

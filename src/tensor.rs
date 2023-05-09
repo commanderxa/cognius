@@ -1,14 +1,14 @@
 use std::{
     cell::RefCell,
     ops::{Add, Mul, Neg, Range, Sub, Div},
-    rc::Rc, fmt::Display,
+    rc::Rc, fmt::Display, f64::consts::E,
 };
 
 use rand::Rng;
 
 use crate::{tensor_data::TensorData, op::Op};
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 /// # Tensor
 /// 
 /// ### Holds the reference to the inner data inside.
@@ -18,7 +18,7 @@ pub struct Tensor(Rc<RefCell<TensorData>>);
 
 impl Tensor {
     /// Creates a new instance of a `Tensor`.
-    fn new(inner: TensorData) -> Self {
+    pub(crate) fn new(inner: TensorData) -> Self {
         Self(Rc::new(RefCell::new(inner)))
     }
 
@@ -36,9 +36,23 @@ impl Tensor {
         Self::new(inner)
     }
 
+    /// Creates a new tensor like the inputted one, where all the values are 0.
+    pub fn zeros_like(tensor: Tensor) -> Self {
+        let mut inner = TensorData::new(tensor.shape());
+        inner.data.fill(0.0);
+        Self::new(inner)
+    }
+
     /// Creates a new tensor, where all the values are 1.
     pub fn ones(shape: Vec<usize>) -> Self {
         let mut inner = TensorData::new(shape);
+        inner.data.fill(1.0);
+        Self::new(inner)
+    }
+
+    /// Creates a new tensor like the inputted one, where all the values are 1.
+    pub fn ones_like(tensor: Tensor) -> Self {
+        let mut inner = TensorData::new(tensor.shape());
         inner.data.fill(1.0);
         Self::new(inner)
     }
@@ -138,6 +152,13 @@ impl Tensor {
         Self::new(inner)
     }
 
+    /// Matrix multiplication
+    /// 
+    /// Accepts:
+    /// * a: `Tensor`
+    /// * b: `Tensor`
+    /// 
+    /// The inner dimensions of the matrices must be the same.
     pub fn mm(a: Self, b: Self) -> Self {
         // shapes of the tensors
         let left_shape = a.shape();
@@ -176,6 +197,10 @@ impl Tensor {
     }
 
     /// Returns the tensor of the new shape.
+    /// 
+    /// Tensor of shape (2, 3) might be viewed as (3, 2), (6, 1), (1, 6).
+    /// Tensor can be viewed as any shape, only if the length of this 
+    /// shape is the same as the length of the previous shape.
     pub fn view(&self, shape: Vec<usize>) -> Self {
         assert_eq!(
             self.length(), 
@@ -189,6 +214,10 @@ impl Tensor {
     }
 
     /// Reshapes the tensor.
+    /// 
+    /// Tensor of shape (2, 3) might be reshaped to (3, 2), (6, 1), (1, 6).
+    /// Tensor can be reshaped into any shape, only if the length of this 
+    /// shape is the same as the length of the previous shape.
     pub fn reshape(&self, shape: Vec<usize>) {
         assert_eq!(
             self.length(), 
@@ -198,6 +227,18 @@ impl Tensor {
             self.length()
         );
         self.0.borrow_mut().shape = shape;
+    }
+
+    pub fn exp(&self) -> Tensor {
+        let mut data = self.item();
+        for i in 0..data.len() {
+            data[i] = E.powf(data[i]);
+        }
+        let backward = |_tensor| {
+            todo!()
+        };
+        let inner = TensorData::from_op(data, self.shape(), vec![self.clone()], backward, Op::Exp(self.clone()));
+        Tensor::new(inner)
     }
 
     /// Converts the tensor to a `String`, so that it can be printed.
@@ -300,6 +341,9 @@ impl Tensor {
         Self::new(inner)
     }
 
+    /// Backward
+    /// 
+    /// Computes the gradients of all the tensors that have been interacting and require_grad.
     pub fn backward(&self) {
         todo!();
     }

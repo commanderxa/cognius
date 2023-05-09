@@ -19,6 +19,30 @@ mod tests {
     }
 
     #[test]
+    fn zeros_like() {
+        let a = Tensor::from_f64(vec![0., 1., 2., 3., 4., 5.], vec![2, 3]);
+        let a1 = Tensor::zeros_like(a.clone());
+        assert_eq!(0.0, a1.item().iter().sum(), "zeros_like produces not zeros");
+        assert_eq!(a.shape(), a1.shape(), "zeros_like produce wrong shape of a tensor");
+        let b = Tensor::randn(vec![4, 10, 8]);
+        let b1 = Tensor::zeros_like(b.clone());
+        assert_eq!(0.0, b1.item().iter().sum(), "zeros_like produces not zeros");
+        assert_eq!(b.shape(), b1.shape(), "zeros_like produce wrong shape of a tensor");
+    }
+
+    #[test]
+    fn ones_like() {
+        let a = Tensor::from_f64(vec![0., 1., 2., 3., 4., 5.], vec![2, 3]);
+        let a1 = Tensor::ones_like(a.clone());
+        assert_eq!(1.0, a1.item().iter().product(), "ones_like produces not ones");
+        assert_eq!(a.shape(), a1.shape(), "ones_like produce wrong shape of a tensor");
+        let b = Tensor::randn(vec![4, 10, 8]);
+        let b1 = Tensor::ones_like(b.clone());
+        assert_eq!(1.0, b1.item().iter().product(), "ones_like produces not ones");
+        assert_eq!(b.shape(), b1.shape(), "ones_like produce wrong shape of a tensor");
+    }
+
+    #[test]
     /// Matrix transpose
     fn t_2d() {
         let a = Tensor::from_f64(vec![0., 1., 2., 3., 4., 5.], vec![2, 3]);
@@ -103,5 +127,12 @@ mod tests {
             vec![3, 4],
         );
         a.reshape(vec![4, 5]);
+    }
+
+    #[test]
+    fn pow() {
+        let a = Tensor::from_f64(vec![0., 1., 2., 3., 4., 5.], vec![2, 3]);
+        let b = Tensor::from_f64(vec![0., 1., 4., 9., 16., 25.], vec![2, 3]);
+        assert_eq!(a.pow(2).item(), b.item(), "Pow is wrong");
     }
 }

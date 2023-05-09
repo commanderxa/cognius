@@ -1,4 +1,4 @@
-use minigrad::{nn::Module, Value, MLP};
+use minigrad::{value_nn::Module, Value, MLP};
 
 fn main() {
     let mlp = MLP::new(4, vec![100, 20, 10, 5, 1]);
