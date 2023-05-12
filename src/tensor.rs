@@ -13,7 +13,7 @@ use crate::{tensor_data::TensorData, op::Op};
 /// 
 /// ### Holds the reference to the inner data inside.
 /// 
-/// See the documentation for the TensorData.
+/// See the documentation for `TensorData`.
 pub struct Tensor(Rc<RefCell<TensorData>>);
 
 impl Tensor {
@@ -161,32 +161,32 @@ impl Tensor {
     /// The inner dimensions of the matrices must be the same.
     pub fn mm(a: Self, b: Self) -> Self {
         // shapes of the tensors
-        let left_shape = a.shape();
-        let right_shape = b.shape();
+        let a_shape = a.shape();
+        let b_shape = b.shape();
         // new tensor result
-        let result = Tensor::ones(vec![left_shape[0], right_shape[right_shape.len() - 1]]);
+        let result = Tensor::zeros(vec![a_shape[0], b_shape[b_shape.len() - 1]]);
         // check wether the operation is able to be proceeded
         assert_eq!(
-            left_shape.last().unwrap(), 
-            right_shape.first().unwrap(), 
+            a_shape.last().unwrap(), 
+            b_shape.first().unwrap(), 
             "The shapes of the tensors must have the same inner dimension -> (M x N) @ (N x M), but you have tensors A: {:?} and B: {:?}", 
-            format!("({left_shape:?})").replace("[", "").replace("]", ""), 
-            format!("({right_shape:?})").replace("[", "").replace("]", ""), 
+            format!("({a_shape:?})").replace("[", "").replace("]", ""), 
+            format!("({b_shape:?})").replace("[", "").replace("]", ""), 
         );
-        // data of the tensors, the tensor on the right is transposed
-        let left = a.item();
-        let right = b.t().item();
+        // data of the tensors, the tensor b is transposed
+        let a_data = a.item();
+        let b_data = b.t().item();
 
         // iterate over the result tensor, it zips the slices of the left and right tensors
         // then it multiplies the two zipped values and returns the slice back, after it sums
         // the vector to obtain the value
-        for i in 0..left_shape[0] {
-            for j in 0..right_shape[1] {
-                let right = &right[(j * left_shape[1])..(j * left_shape[1] + left_shape[1])];
-                result.0.borrow_mut().data[i * left_shape[0] + j] = left
-                    [(i * left_shape[1])..(i * left_shape[1] + left_shape[1])]
+        for i in 0..a_shape[0] {
+            for j in 0..b_shape[1] {
+                let b_data = &b_data[(j * a_shape[1])..(j * a_shape[1] + a_shape[1])];
+                result.0.borrow_mut().data[b_shape[1] * i + j] = a_data
+                    [(i * a_shape[1])..(i * a_shape[1] + a_shape[1])]
                     .iter()
-                    .zip(right)
+                    .zip(b_data)
                     .map(|(&a, &b)| a * b)
                     .collect::<Vec<f64>>()
                     .iter()

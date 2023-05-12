@@ -7,7 +7,7 @@ pub trait Module {
 }
 
 pub struct Linear {
-    weight: Tensor,
+    pub weight: Tensor,
     bias: Option<Tensor>,
 }
 
