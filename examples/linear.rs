@@ -1,4 +1,7 @@
-use minigrad::{nn::{Linear, Module, sigmoid}, Tensor};
+use minigrad::{
+    nn::{sigmoid, Linear, Module},
+    Tensor,
+};
 
 fn main() {
     let linear = Linear::new(20, 10);

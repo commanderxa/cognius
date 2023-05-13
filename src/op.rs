@@ -25,28 +25,3 @@ impl std::fmt::Display for Op {
         }
     }
 }
-
-// Alternative Backward idea
-//
-//
-//
-// pub trait Backward {
-//     fn backward(&self, tensor: Tensor);
-// }
-
-// impl Backward for Op {
-//     fn backward(&self, tensor: Tensor) {
-//         match self {
-//             Op::Add => {
-//                 let t = tensor.0.borrow();
-//                 let grad = t.grad.clone().unwrap();
-//                 t._prev[0].add_grad(grad.clone());
-//                 t._prev[1].add_grad(grad);
-//             },
-//             Op::Mul => todo!(),
-//             Op::Pow(_) => todo!(),
-//             Op::ReLU => todo!(),
-//             Op::Sigmoid(_) => todo!(),
-//         }
-//     }
-// }

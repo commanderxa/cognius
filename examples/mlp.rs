@@ -1,48 +1,42 @@
-use minigrad::{value_nn::Module, Value, MLP};
+use minigrad::{nn::{Linear, Module, sigmoid}, Tensor};
 
 fn main() {
-    let mlp = MLP::new(4, vec![100, 20, 10, 5, 1]);
-    let data = Value::from_vec(vec![0.5, 1.0, 1.5, 2.0]);
-    let target = Value::from(2.0);
+    let mlp = MLP::new([4, 10, 20, 5, 1]);
+    let x = Tensor::randn(vec![10, 4]);
+    let out = mlp.forward(x);
+    println!("out: {:?}", out.item());
+    println!("shape: {:?}", out.shape());
+}
 
-    let epochs = 100;
-    let lr = 0.02;
-    let model_size = mlp.parameters().len();
-    println!("Model is of size {model_size} parameters");
-    println!("Training on {epochs} epochs...");
+struct MLP {
+    linear1: Linear,
+    linear2: Linear,
+    linear3: Linear,
+    linear4: Linear,
+}
 
-    // training loop
-    for _epoch in 1..epochs + 1 {
-        // inference
-        let out = mlp.call(data.clone());
-        let out = out.first();
-        let out = out.unwrap();
-
-        // compute the loss (MSE Loss)
-        let loss = (out.clone() - target.clone()).pow(2);
-
-        // compute the grads
-        mlp.zero_grad();
-        loss.backward();
-
-        // optimization step
-        for p in mlp.parameters() {
-            p.add_data(-lr * p.get_grad());
+impl MLP {
+    pub fn new(features: [usize; 5]) -> Self {
+        Self {
+            linear1: Linear::new(features[0], features[1]),
+            linear2: Linear::new(features[1], features[2]),
+            linear3: Linear::new(features[2], features[3]),
+            linear4: Linear::new(features[3], features[4]),
         }
+    }
+}
 
-        // println!("{epoch}/{epochs} | Loss: {0}", loss.get_data());
+impl Module for MLP {
+    fn module_name(&self) -> String {
+        "MLP".to_owned()
     }
 
-    let out = mlp.call(data);
-    let out = out.first();
-    let out = out.unwrap();
-    let loss = (out.clone() - target.clone()).pow(2);
-    out.backward();
-
-    println!(
-        "\n### Results ###\n\nOut: {}\nTarget: {}\nLoss: {}",
-        out.get_data(),
-        target.get_data(),
-        loss.get_data()
-    );
+    fn forward(&self, x: Tensor) -> Tensor {
+        let x = self.linear1.forward(x);
+        let x = self.linear2.forward(x);
+        let x = self.linear3.forward(x);
+        let x = self.linear4.forward(x);
+        sigmoid(x)
+    }
 }
+

@@ -58,6 +58,7 @@ impl TensorData {
         }
     }
 
+    /// Creates a new instance of the TensorData produced by any `Op`. 
     pub fn from_op(
         data: Vec<f64>,
         shape: Vec<usize>,
