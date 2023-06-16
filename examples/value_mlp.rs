@@ -41,8 +41,8 @@ fn main() {
 
     println!(
         "\n### Results ###\n\nOut: {}\nTarget: {}\nLoss: {}",
-        out.get_data(),
-        target.get_data(),
-        loss.get_data()
+        out.item(),
+        target.item(),
+        loss.item()
     );
 }

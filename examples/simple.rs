@@ -24,52 +24,52 @@ fn main() {
     println!("=== Value decomposition ===");
     println!(
         "T1\t= Data: {} \t| Grad: {}",
-        t1.get_data(),
+        t1.item(),
         t1.get_grad()
     );
     println!(
         "T2\t= Data: {} \t| Grad: {}",
-        t2.get_data(),
+        t2.item(),
         t2.get_grad()
     );
     println!(
         "PR1\t= Data: {} \t| Grad: {}",
-        pr1.get_data(),
+        pr1.item(),
         pr1.get_grad()
     );
     println!(
         "T4\t= Data: {} \t| Grad: {}",
-        t4.get_data(),
+        t4.item(),
         t4.get_grad()
     );
     println!(
         "PR2\t= Data: {} \t| Grad: {}",
-        pr2.get_data(),
+        pr2.item(),
         pr2.get_grad()
     );
     println!(
         "T6\t= Data: {:.4} \t| Grad: {}",
-        t6.get_data(),
+        t6.item(),
         t6.get_grad()
     );
     println!(
         "T7\t= Data: {} \t| Grad: {}",
-        t7.get_data(),
+        t7.item(),
         t7.get_grad()
     );
     println!(
         "PR3\t= Data: {:.3} \t| Grad: {}",
-        pr3.get_data(),
+        pr3.item(),
         pr3.get_grad()
     );
     println!(
         "PR4\t= Data: {:.4} \t| Grad: {}",
-        pr4.get_data(),
+        pr4.item(),
         pr4.get_grad()
     );
     println!(
         "PR5\t= Data: {:.4} \t| Grad: {}",
-        pr5.get_data(),
+        pr5.item(),
         pr5.get_grad()
     );
 }

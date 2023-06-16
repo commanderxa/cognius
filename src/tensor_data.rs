@@ -7,7 +7,7 @@ use crate::{op::Op, Tensor};
 ///
 /// `Tensor` holds a reference to it, allowing to use the same data.\
 /// See the documentation for `Tensor`.
-pub(crate) struct TensorData {
+pub struct TensorData {
     // stored data
     // it is a single vector that is viewed regarding the shape
     pub data: Vec<f64>,
@@ -38,16 +38,17 @@ impl TensorData {
     }
 
     /// Sets the gradients to 0.
-    pub fn fill_grad(tensor: &mut Vec<f64>) {
-        for _ in 0..tensor.len() {
-            tensor.push(0.0);
-        }
-    }
+    // pub fn fill_grad(tensor: &mut Vec<f64>) {
+    //     for _ in 0..tensor.len() {
+    //         tensor.push(0.0);
+    //     }
+    //     println!("TENSOOOOOR: {}", tensor.len());
+    // }
 
     /// Creates a new instance of the TensorData from a Vector.
     pub fn from_f64(data: Vec<f64>, shape: Vec<usize>) -> Self {
-        let mut grad = Vec::with_capacity(data.len());
-        Self::fill_grad(&mut grad);
+        let grad = vec![0.0; data.len()];
+        // Self::fill_grad(&mut grad);
         Self {
             data: data,
             grad: Some(grad),
@@ -66,8 +67,8 @@ impl TensorData {
         backward: fn(Tensor),
         op: Op,
     ) -> Self {
-        let mut grad = Vec::with_capacity(data.len());
-        Self::fill_grad(&mut grad);
+        let grad = vec![0.0; data.len()];
+        // Self::fill_grad(&mut grad);
         Self {
             data: data,
             grad: Some(grad),

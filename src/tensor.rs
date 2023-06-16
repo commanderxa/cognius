@@ -6,7 +6,7 @@ use std::{
 
 use rand::Rng;
 
-use crate::{tensor_data::TensorData, op::Op};
+use crate::{tensor_data::TensorData, op::Op, backward::Backward};
 
 #[derive(Clone, Debug, PartialEq)]
 /// # Tensor
@@ -222,9 +222,9 @@ impl Tensor {
             let a = c.t();
             let b = c.t();
             c.0.borrow_mut()._prev[0]
-                .add_grad(Tensor::mm(d_c.clone(), b).item());
+                .add_to_grad(Tensor::mm(d_c.clone(), b).item());
             c.0.borrow_mut()._prev[1]
-                .add_grad(Tensor::mm(a, d_c).item());
+                .add_to_grad(Tensor::mm(a, d_c).item());
         };
         let inner = TensorData::from_op(
             result, 
@@ -357,9 +357,10 @@ impl Tensor {
     }
 
     /// Add a `Vec<f64>` value to the gradient inside the `TensorData`.
-    pub(crate) fn add_grad(&self, data: Vec<f64>) {
-        self.0.borrow_mut().grad = Some(
-            self.0.borrow_mut().grad
+    pub(crate) fn add_to_grad(&self, data: Vec<f64>) {
+        let mut t = self.0.borrow_mut();
+        t.grad = Some(
+            t.grad
                 .clone()
                 .unwrap()
                 .iter()
@@ -393,7 +394,7 @@ impl Tensor {
                         .map(|(a, b)| a * n as f64 * b)
                         .collect::<Vec<f64>>();
 
-                tensor.0.borrow()._prev[0].add_grad(grad);
+                tensor.0.borrow()._prev[0].add_to_grad(grad);
             }
         };
         let data = self
@@ -415,7 +416,23 @@ impl Tensor {
     /// Computes the gradients of all the tensors that have been interacting and 
     /// have `requires_grad` set to `true`.
     pub fn backward(&self) {
-        todo!();
+        println!("111");
+        self.add_to_grad(vec![1.0; self.length()]);
+        println!("{:?}", self.grad());
+        println!("222");
+        self._backward()
+    }
+
+    pub fn _backward(&self) {
+        let t = self.0.borrow();
+        if t.grad.is_some() && t._op.is_some() {
+            t._op.as_ref().unwrap().backward(&t);
+            if !t._prev.is_empty() {
+                for prev in t._prev.clone() {
+                    prev._backward()
+                }
+            }
+        }
     }
 
     /// Multicast operation
@@ -488,35 +505,6 @@ impl Tensor {
             _ => unreachable!(),
         }
         res
-
-
-        // Alternative implementation using recursion
-        //
-        //
-        // let mut res = Vec::with_capacity(gt.len());
-        // // if shapes are equal (base case) => perform the operation
-        // // else => go deeper into the greater tensor
-        // if gt_shape == lt_shape {
-        //     for i in 0..gt.len() {
-        //         res.push(gt[i] + lt[i]);
-        //     }
-        // } else {
-        //     let part_size = gt.len() / gt_shape[0];
-        //     let mut r_gt_shape = gt_shape.clone();
-        //     let _ = r_gt_shape.remove(0);
-        //     for i in 0..gt_shape[0] {
-        //         res.append(
-        //             &mut Self::recursive_op(
-        //                 gt[part_size*i..part_size*i+part_size].to_vec(), 
-        //                 lt.clone(), 
-        //                 r_gt_shape.clone(), 
-        //                 lt_shape.clone(), 
-        //                 op.clone()
-        //             )
-        //         );
-        //     }
-        // }
-        // res
     }
 }
 
@@ -551,8 +539,8 @@ impl Add for Tensor {
         let backward = |tensor: Tensor| {
             let t = tensor.0.borrow();
             let grad = t.grad.clone().unwrap();
-            t._prev[0].add_grad(grad.clone());
-            t._prev[1].add_grad(grad);
+            t._prev[0].add_to_grad(grad.clone());
+            t._prev[1].add_to_grad(grad);
         };
         let inner = TensorData::from_op(
             res, 
@@ -618,8 +606,8 @@ impl Mul for Tensor {
         let backward = |tensor: Tensor| {
             let t = tensor.0.borrow();
             let grad = t.grad.clone().unwrap();
-            t._prev[0].add_grad(grad.clone());
-            t._prev[1].add_grad(grad);
+            t._prev[0].add_to_grad(grad.clone());
+            t._prev[1].add_to_grad(grad);
         };
         let inner = TensorData::from_op(
             res, 

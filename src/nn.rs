@@ -54,5 +54,5 @@ pub fn relu(x: Tensor) -> Tensor {
 }
 
 pub fn sigmoid(x: Tensor) -> Tensor {
-    (x.exp() + 1.0).pow(-1)
+    ((-x).exp() + 1.0).pow(-1)
 }

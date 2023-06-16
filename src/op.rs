@@ -18,7 +18,7 @@ impl std::fmt::Display for Op {
             Op::Add => write!(f, "Add"),
             Op::Mul => write!(f, "Mul"),
             Op::Pow(n) => write!(f, "Pow({n})"),
-            Op::Exp(_) => write!(f, "Exp(..)"),
+            Op::Exp(_) => write!(f, "Exp"),
             Op::MatMul => write!(f, "MatMul"),
             Op::ReLU => write!(f, "ReLU"),
             Op::Sigmoid(n) => write!(f, "Sigmoid({n})"),

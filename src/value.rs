@@ -57,7 +57,7 @@ impl Value {
     }
 
     /// Returns the `f64` data inside the `InnerValue`.
-    pub fn get_data(&self) -> f64 {
+    pub fn item(&self) -> f64 {
         self.0.borrow().data
     }
 
@@ -136,14 +136,14 @@ impl Value {
     /// For backpropagation it stores the `n` inside the `Op::Pow(n)`.
     pub fn pow(self, n: i32) -> Value {
         let backward = |value: &Ref<InnerValue>| {
-            let left = value._prev[0].get_data();
+            let left = value._prev[0].item();
             if let Op::Pow(n) = value._op.as_ref().unwrap() {
                 let n = n.clone();
                 value._prev[0].add_grad(n as f64 * left.powi(n - 1) * value.grad);
             }
         };
 
-        let data = self.get_data().powi(n);
+        let data = self.item().powi(n);
         let set = vec![self];
         let inner = InnerValue::from_op(data, set, backward, Op::Pow(n));
         Value::new(inner)
@@ -165,8 +165,8 @@ impl Value {
             value._prev[0].add_grad(grad);
         };
 
-        let data = if self.get_data() > 0.0 {
-            self.get_data()
+        let data = if self.item() > 0.0 {
+            self.item()
         } else {
             0.0
         };
@@ -187,7 +187,7 @@ impl Value {
             }
         };
 
-        let x = self.get_data();
+        let x = self.item();
         let data = 1.0 / (1.0 + E.powf(x));
         let set = vec![self];
         let inner = InnerValue::from_op(data, set, backward, Op::Sigmoid(x));
@@ -250,7 +250,7 @@ impl Add for Value {
             value._prev[1].add_grad(value.grad);
         };
 
-        let data = self.get_data() + rhs.get_data();
+        let data = self.item() + rhs.item();
         let set = vec![self, rhs];
         let inner = InnerValue::from_op(data, set, backward, Op::Add);
         Value::new(inner)
@@ -263,13 +263,13 @@ impl Mul for Value {
     fn mul(self, rhs: Self) -> Self::Output {
         let backward = |value: &Ref<InnerValue>| {
             // In multiplication each value gradient is: other.data * value.grad
-            let left = value._prev[0].get_data();
-            let right = value._prev[1].get_data();
+            let left = value._prev[0].item();
+            let right = value._prev[1].item();
             value._prev[0].add_grad(right * value.grad);
             value._prev[1].add_grad(left * value.grad);
         };
 
-        let data = self.get_data() * rhs.get_data();
+        let data = self.item() * rhs.item();
         let set = vec![self, rhs];
         let inner = InnerValue::from_op(data, set, backward, Op::Mul);
         Value::new(inner)
@@ -305,7 +305,7 @@ impl std::fmt::Display for Value {
         write!(
             f,
             "Value: {{ data: {0}, prev: {{ {1}, {2} }}, op: {3}, grad: {4} }}",
-            self.get_data(),
+            self.item(),
             if let Some(left) = self.0.borrow()._prev.get(0) {
                 format!("{}", left)
             } else {
