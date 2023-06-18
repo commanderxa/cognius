@@ -1,13 +1,13 @@
 use std::cell::Ref;
 
-use crate::{op::Op, tensor_data::TensorData};
+use crate::{op::Op, tensor_data::TensorData, Tensor};
 
 /// Backward trait for backpropagation operation.
 pub trait Backward {
     fn backward(&self, tensor: &Ref<TensorData>);
 }
 
-/// `Backward` trait implemeted for `Op` where eacj operation has it's own
+/// `Backward` trait implemeted for `Op` where each operation has it's own
 /// backpropagation operation.
 impl Backward for Op {
     fn backward(&self, tensor: &Ref<TensorData>) {
@@ -21,7 +21,19 @@ impl Backward for Op {
                 t._prev[1].add_to_grad(grad);
             }
 
+            // Addition backward
+            // 1.0 * grad for both previous tensors
+            Op::Sub => {
+                let t = tensor;
+                let grad = t.grad.clone().unwrap();
+                t._prev[0].add_to_grad(grad.clone());
+                t._prev[1].add_to_grad(grad);
+            }
+
             // Multiplication backward
+            // a * b
+            // da = b * grad
+            // db = a * grad
             Op::Mul => {
                 let t = tensor;
                 let grad = t.grad.clone().unwrap();
@@ -51,7 +63,9 @@ impl Backward for Op {
                         .collect(),
                 );
             }
+
             // Exponent backward
+            // d(e^x)/dx = e^x
             Op::Exp(t) => {
                 let grad = tensor.grad.clone().unwrap();
                 tensor._prev[0].add_to_grad(
@@ -65,9 +79,22 @@ impl Backward for Op {
             }
 
             // Matrix Multiplication backward
-            Op::MatMul => todo!(),
+            // da = dc @ b.T
+            // db = a.T @ dc
+            Op::MatMul => {
+                let d_c = Tensor::new(TensorData::from_f64(
+                    tensor.grad.clone().unwrap(),
+                    tensor.shape.clone(),
+                ))
+                .requires_grad(false);
+                let a = tensor._prev[0].t();
+                let b = tensor._prev[1].t();
+                tensor._prev[0].add_to_grad(Tensor::mm(d_c.clone(), b).item());
+                tensor._prev[1].add_to_grad(Tensor::mm(a, d_c).item());
+            }
 
             // ReLU backward
+            // d(relu)/dx = { 1 if x > 0 else 0 }
             Op::ReLU => {
                 let t = tensor;
                 let mut prev = t._prev[0].0.borrow_mut();
@@ -78,9 +105,14 @@ impl Backward for Op {
             }
 
             // Sigmoid backward
-            Op::Sigmoid(_) => {
-                // sigmoid function:        1 / (1 + exp(-x))
-                // dx(sigmoid) function:    exp(-x) / (1 + exp(-x))^2
+            // sigmoid function:        1 / (1 + exp(-x))
+            // dx(sigmoid) function:    exp(-x) / (1 + exp(-x))^2
+            Op::Sigmoid(x) => {
+                let e_x = (-x.clone()).exp();
+                let res = e_x.clone() / (e_x + 1.0).pow(2);
+                let grad = tensor.grad.clone().unwrap();
+                let dx = grad.iter().zip(res.item()).map(|(a, b)| a * b).collect();
+                tensor._prev[0].add_to_grad(dx);
             }
         }
     }

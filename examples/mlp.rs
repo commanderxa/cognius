@@ -1,11 +1,52 @@
-use minigrad::{nn::{Linear, Module, sigmoid}, Tensor};
+use minigrad::{
+    nn::{optim::SGD, sigmoid, Linear, MSELoss, Module},
+    Tensor,
+};
 
 fn main() {
-    let mlp = MLP::new([4, 10, 20, 5, 1]);
-    let x = Tensor::randn(vec![10, 4]);
-    let out = mlp.forward(x);
-    println!("out: {:?}", out.item());
-    println!("shape: {:?}", out.shape());
+    let epochs = 10;
+    let criterion = MSELoss::new();
+    let mlp = MLP::new([1, 10, 20, 5, 1]);
+    let optim = SGD::new(mlp.parameters(), 3e+1);
+    let targets = vec![
+        Tensor::from_f64(vec![1.0], vec![1, 1]),
+        Tensor::from_f64(vec![0.0], vec![1, 1]),
+    ];
+    let data = vec![
+        Tensor::from_f64(vec![1.0], vec![1, 1]),
+        Tensor::from_f64(vec![0.0], vec![1, 1]),
+    ];
+
+    for i in 1..=epochs {
+        let mut losses = 0.0;
+        for (x, y) in data.iter().zip(targets.clone()) {
+            let x = x.clone();
+            let y = y.clone();
+            let out = mlp.forward(x);
+
+            let loss = criterion.measure(out, y);
+            
+            loss.backward();
+            optim.step();
+            optim.zero_grad();
+            
+            losses += loss.item()[0];
+        }
+        println!("Epoch: {i}/{epochs} | loss: {:.10}", losses);
+    }
+
+    for (x, y) in data.iter().zip(targets.clone()) {
+        let out = mlp.forward(x.clone());
+
+        let loss = criterion.measure(out.clone(), y.clone());
+        println!(
+            "\nDATA: {0}\nTARGETS: {1}\nOUT:  {2}\nLOSS: {3:?}",
+            x,
+            y.item()[0],
+            out.item()[0],
+            loss.item()[0]
+        );
+    }
 }
 
 struct MLP {
@@ -38,5 +79,12 @@ impl Module for MLP {
         let x = self.linear4.forward(x);
         sigmoid(x)
     }
-}
 
+    fn parameters(&self) -> Vec<Tensor> {
+        let mut parameters = self.linear1.parameters();
+        parameters.append(&mut self.linear2.parameters());
+        parameters.append(&mut self.linear3.parameters());
+        parameters.append(&mut self.linear4.parameters());
+        parameters
+    }
+}

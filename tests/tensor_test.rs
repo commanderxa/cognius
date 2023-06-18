@@ -135,4 +135,11 @@ mod tests {
         let b = Tensor::from_f64(vec![0., 1., 4., 9., 16., 25.], vec![2, 3]);
         assert_eq!(a.pow(2).item(), b.item(), "Pow is wrong");
     }
+
+    #[test]
+    fn neg() {
+        let a = Tensor::arange(0.0, 10.0, 1.0);
+        let b = -a.clone();
+        assert_eq!(b, Tensor::arange(0.0, -10.0, -1.0));
+    }
 }

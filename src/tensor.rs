@@ -214,23 +214,11 @@ impl Tensor {
                     .sum();
             }
         }
-        let backward = |c: Tensor| {
-            let d_c = Tensor::new(TensorData::from_f64(
-                c.grad().unwrap(), 
-                c.shape())
-            ).requires_grad(false);
-            let a = c.t();
-            let b = c.t();
-            c.0.borrow_mut()._prev[0]
-                .add_to_grad(Tensor::mm(d_c.clone(), b).item());
-            c.0.borrow_mut()._prev[1]
-                .add_to_grad(Tensor::mm(a, d_c).item());
-        };
         let inner = TensorData::from_op(
             result, 
             vec![a_shape[0], b_shape[b_shape.len() - 1]], 
             vec![a, b], 
-            backward, Op::MatMul
+            Op::MatMul
         );
         Tensor::new(inner)
     }
@@ -276,13 +264,10 @@ impl Tensor {
         for i in 0..data.len() {
             data[i] = E.powf(data[i]);
         }
-        let backward = |_tensor| {
-            todo!()
-        };
         let inner = TensorData::from_op(
-            data, self.shape(), 
+            data, 
+            self.shape(), 
             vec![self.clone()], 
-            backward, 
             Op::Exp(self.clone())
         );
         Tensor::new(inner)
@@ -375,28 +360,16 @@ impl Tensor {
         self.0.borrow().grad.clone()
     }
 
+    pub fn set_data(&self, data: Vec<f64>) {
+        self.0.borrow_mut().data = data;
+    }
+
     /// Powers the `Tensor`
     /// 
     /// Accepts `n` integer in which the `Tensor` will be powered.
     /// 
     /// For backpropagation it stores the `n` inside the `Op::Pow(n)`.
     pub fn pow(self, n: i32) -> Tensor {
-        let backward = |tensor: Tensor| {
-            let t = tensor.0.borrow();
-            if let Op::Pow(n) = t._op.as_ref().unwrap() {
-                let n = n.clone();
-                let grad = t.data
-                    .iter()
-                    .map(|a| a.powi(n - 1))
-                        .collect::<Vec<f64>>()
-                        .iter()
-                        .zip(&t.grad.clone().unwrap())
-                        .map(|(a, b)| a * n as f64 * b)
-                        .collect::<Vec<f64>>();
-
-                tensor.0.borrow()._prev[0].add_to_grad(grad);
-            }
-        };
         let data = self
             .item()
             .iter()
@@ -405,7 +378,6 @@ impl Tensor {
         let inner = TensorData::from_op(
             data, self.shape(), 
             vec![self], 
-            backward, 
             Op::Pow(n)
         );
         Self::new(inner)
@@ -416,10 +388,7 @@ impl Tensor {
     /// Computes the gradients of all the tensors that have been interacting and 
     /// have `requires_grad` set to `true`.
     pub fn backward(&self) {
-        println!("111");
         self.add_to_grad(vec![1.0; self.length()]);
-        println!("{:?}", self.grad());
-        println!("222");
         self._backward()
     }
 
@@ -455,7 +424,7 @@ impl Tensor {
         let gt_shape = gt.shape();
         let lt_shape = lt.shape();
         // ensure that th eoperation is within the permitted ones
-        let pass = (op == Op::Add || op == Op::Mul) 
+        let pass = (op == Op::Add || op == Op::Sub || op == Op::Mul) 
             && (gt_shape.len() > lt_shape.len() 
                 || gt_shape.len() == lt_shape.len());
         assert_eq!(true, pass);
@@ -492,6 +461,16 @@ impl Tensor {
                     res.append(&mut tmp);
                 }
             },
+            Op::Sub => {
+                for i in (0..gt.length()).step_by(conv) {
+                    let mut tmp = gt.0.borrow_mut().data[i..i+conv]
+                        .iter()
+                        .zip(lt.0.borrow().data.clone())
+                        .map(|(a, b)| a - b)
+                        .collect::<Vec<f64>>();
+                    res.append(&mut tmp);
+                }
+            },
             Op::Mul => {
                 for i in (0..gt.length()).step_by(conv) {
                     let mut tmp = gt.0.borrow_mut().data[i..i+conv]
@@ -520,11 +499,11 @@ impl Add for Tensor {
         let rhs_shape = rhs.shape();
 
         let mut res = self.item();
-        let mut res_shape = vec![];
+        let mut res_shape = self.shape();
         let op = Op::Add;
 
         if rhs_len == 1 {
-            for i in 0..self.shape().iter().product() {
+            for i in 0..self.length() {
                 res[i] += rhs.0.borrow_mut().data[0];
             }
         } else {
@@ -536,17 +515,10 @@ impl Add for Tensor {
             res_shape = gt_shape;
             res = Self::multicast_op(gt, lt, op.clone());
         }
-        let backward = |tensor: Tensor| {
-            let t = tensor.0.borrow();
-            let grad = t.grad.clone().unwrap();
-            t._prev[0].add_to_grad(grad.clone());
-            t._prev[1].add_to_grad(grad);
-        };
         let inner = TensorData::from_op(
             res, 
             res_shape, 
             vec![self, rhs], 
-            backward, 
             op
         );
         Self::new(inner)
@@ -557,7 +529,7 @@ impl Add<i64> for Tensor {
     type Output = Tensor;
 
     fn add(self, rhs: i64) -> Self::Output {
-        for i in 0..self.shape().iter().product() {
+        for i in 0..self.length() {
             self.0.borrow_mut().data[i] += rhs as f64;
         }
         self
@@ -568,7 +540,7 @@ impl Add<f64> for Tensor {
     type Output = Tensor;
 
     fn add(self, rhs: f64) -> Self::Output {
-        for i in 0..self.shape().iter().product() {
+        for i in 0..self.length() {
             self.0.borrow_mut().data[i] += rhs;
         }
         self
@@ -587,12 +559,12 @@ impl Mul for Tensor {
         let rhs_shape = rhs.shape();
 
         let mut res = self.item();
-        let mut res_shape = vec![];
+        let mut res_shape = self.shape();
         let op = Op::Mul;
 
         if rhs_len == 1 {
-            for i in 0..self.shape().iter().product() {
-                res[i] += rhs.0.borrow_mut().data[0];
+            for i in 0..self.length() {
+                res[i] *= rhs.0.borrow_mut().data[0];
             }
         } else {
             let (gt, gt_shape, lt, _lt_shape) = if self_len > rhs_len {
@@ -603,17 +575,10 @@ impl Mul for Tensor {
             res_shape = gt_shape;
             res = Self::multicast_op(gt, lt, op.clone());
         }
-        let backward = |tensor: Tensor| {
-            let t = tensor.0.borrow();
-            let grad = t.grad.clone().unwrap();
-            t._prev[0].add_to_grad(grad.clone());
-            t._prev[1].add_to_grad(grad);
-        };
         let inner = TensorData::from_op(
             res, 
             res_shape, 
             vec![self, rhs], 
-            backward, 
             op
         );
         Self::new(inner)
@@ -624,7 +589,7 @@ impl Mul<i64> for Tensor {
     type Output = Tensor;
 
     fn mul(self, rhs: i64) -> Self::Output {
-        for i in 0..self.shape().iter().product() {
+        for i in 0..self.length() {
             self.0.borrow_mut().data[i] *= rhs as f64;
         }
         self
@@ -635,7 +600,7 @@ impl Mul<f64> for Tensor {
     type Output = Tensor;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        for i in 0..self.shape().iter().product() {
+        for i in 0..self.length() {
             self.0.borrow_mut().data[i] *= rhs;
         }
         self
@@ -646,7 +611,7 @@ impl Neg for Tensor {
     type Output = Tensor;
 
     fn neg(self) -> Self::Output {
-        self * Tensor::from_f64(vec![-1.0], vec![1])
+        self * -1.0
     }
 }
 
@@ -654,7 +619,37 @@ impl Sub for Tensor {
     type Output = Tensor;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        self + (-rhs)
+        // get lengths
+        let self_len = self.length();
+        let rhs_len = rhs.length();
+        // get shapes
+        let self_shape = self.shape();
+        let rhs_shape = rhs.shape();
+
+        let mut res = self.item();
+        let mut res_shape = self.shape();
+        let op = Op::Sub;
+
+        if rhs_len == 1 {
+            for i in 0..self.length() {
+                res[i] -= rhs.0.borrow_mut().data[0];
+            }
+        } else {
+            let (gt, gt_shape, lt, _lt_shape) = if self_len > rhs_len {
+                (&self, self_shape, &rhs, rhs_shape)
+            } else {
+                (&rhs, rhs_shape, &self, self_shape)
+            };
+            res_shape = gt_shape;
+            res = Self::multicast_op(gt, lt, op.clone());
+        }
+        let inner = TensorData::from_op(
+            res, 
+            res_shape, 
+            vec![self, rhs], 
+            op
+        );
+        Self::new(inner)
     }
 }
 

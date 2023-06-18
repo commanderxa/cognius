@@ -17,8 +17,6 @@ pub struct TensorData {
     pub shape: Vec<usize>,
     // vector of the tensors that were used to produce this tensor
     pub _prev: Vec<Tensor>,
-    // backward function
-    pub _backward: Option<fn(tensor: Tensor)>,
     // operation that was used to produce this tensor
     pub _op: Option<Op>,
 }
@@ -32,7 +30,6 @@ impl TensorData {
             grad: Some(vec![0.0; len]),
             shape: shape,
             _prev: vec![],
-            _backward: None,
             _op: None,
         }
     }
@@ -42,8 +39,18 @@ impl TensorData {
     //     for _ in 0..tensor.len() {
     //         tensor.push(0.0);
     //     }
-    //     println!("TENSOOOOOR: {}", tensor.len());
     // }
+
+    /// Sets gradients to 0
+    pub fn zero_grad(&mut self) {
+        let grad = vec![0.0; self.data.len()];
+        self.grad = Some(grad);
+    }
+
+    /// Sets gradients to `None`
+    pub fn grad_none(&mut self) {
+        self.grad = None;
+    }
 
     /// Creates a new instance of the TensorData from a Vector.
     pub fn from_f64(data: Vec<f64>, shape: Vec<usize>) -> Self {
@@ -54,19 +61,12 @@ impl TensorData {
             grad: Some(grad),
             shape: shape,
             _prev: vec![],
-            _backward: None,
             _op: None,
         }
     }
 
-    /// Creates a new instance of the TensorData produced by any `Op`. 
-    pub fn from_op(
-        data: Vec<f64>,
-        shape: Vec<usize>,
-        prev: Vec<Tensor>,
-        backward: fn(Tensor),
-        op: Op,
-    ) -> Self {
+    /// Creates a new instance of the TensorData produced by any `Op`.
+    pub fn from_op(data: Vec<f64>, shape: Vec<usize>, prev: Vec<Tensor>, op: Op) -> Self {
         let grad = vec![0.0; data.len()];
         // Self::fill_grad(&mut grad);
         Self {
@@ -74,7 +74,6 @@ impl TensorData {
             grad: Some(grad),
             shape: shape,
             _prev: prev,
-            _backward: Some(backward),
             _op: Some(op),
         }
     }
