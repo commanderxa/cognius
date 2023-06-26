@@ -4,20 +4,21 @@ use minigrad::{
 };
 
 fn main() {
-    let epochs = 10;
+    let epochs = 2000;
     let criterion = MSELoss::new();
-    let mlp = MLP::new([1, 10, 20, 5, 1]);
-    let optim = SGD::new(mlp.parameters(), 3e+1);
+    let mlp = MLP::new([5, 1]);
+    let optim = SGD::new(mlp.parameters(), 3e-4);
+
+    let data = vec![
+        Tensor::randn(vec![4, 5]) * 100.0,
+        Tensor::randn(vec![4, 5]),
+    ];
     let targets = vec![
         Tensor::from_f64(vec![1.0], vec![1, 1]),
         Tensor::from_f64(vec![0.0], vec![1, 1]),
     ];
-    let data = vec![
-        Tensor::from_f64(vec![1.0], vec![1, 1]),
-        Tensor::from_f64(vec![0.0], vec![1, 1]),
-    ];
 
-    for i in 1..=epochs {
+    for epoch in 1..=epochs {
         let mut losses = 0.0;
         for (x, y) in data.iter().zip(targets.clone()) {
             let x = x.clone();
@@ -25,14 +26,20 @@ fn main() {
             let out = mlp.forward(x);
 
             let loss = criterion.measure(out, y);
-            
+
             loss.backward();
+            if epoch == 1 {
+                println!("BACKWARD:\n{:?}", mlp.parameters());
+            }
             optim.step();
+            if epoch == 1 {
+                println!("STEP:\n{:?}\n", mlp.parameters());
+            }
             optim.zero_grad();
-            
+
             losses += loss.item()[0];
         }
-        println!("Epoch: {i}/{epochs} | loss: {:.10}", losses);
+        println!("Epoch: {epoch}/{epochs} | loss: {:.10}", losses);
     }
 
     for (x, y) in data.iter().zip(targets.clone()) {
@@ -46,23 +53,28 @@ fn main() {
             out.item()[0],
             loss.item()[0]
         );
+        loss.backward();
+        for (i, param) in mlp.parameters().iter().enumerate() {
+            let sum = param.grad().unwrap().iter().sum::<f64>();
+            println!("{i} ==> {sum:.50}");
+        }
     }
 }
 
 struct MLP {
     linear1: Linear,
-    linear2: Linear,
-    linear3: Linear,
-    linear4: Linear,
+    // linear2: Linear,
+    // linear3: Linear,
+    // linear4: Linear,
 }
 
 impl MLP {
-    pub fn new(features: [usize; 5]) -> Self {
+    pub fn new(features: [usize; 2]) -> Self {
         Self {
             linear1: Linear::new(features[0], features[1]),
-            linear2: Linear::new(features[1], features[2]),
-            linear3: Linear::new(features[2], features[3]),
-            linear4: Linear::new(features[3], features[4]),
+            // linear2: Linear::new(features[1], features[2]),
+            // linear3: Linear::new(features[2], features[3]),
+            // linear4: Linear::new(features[3], features[4]),
         }
     }
 }
@@ -74,17 +86,17 @@ impl Module for MLP {
 
     fn forward(&self, x: Tensor) -> Tensor {
         let x = self.linear1.forward(x);
-        let x = self.linear2.forward(x);
-        let x = self.linear3.forward(x);
-        let x = self.linear4.forward(x);
+        // let x = self.linear2.forward(x);
+        // let x = self.linear3.forward(x);
+        // let x = self.linear4.forward(x);
         sigmoid(x)
     }
 
     fn parameters(&self) -> Vec<Tensor> {
-        let mut parameters = self.linear1.parameters();
-        parameters.append(&mut self.linear2.parameters());
-        parameters.append(&mut self.linear3.parameters());
-        parameters.append(&mut self.linear4.parameters());
+        let parameters = self.linear1.parameters();
+        // parameters.append(&mut self.linear2.parameters());
+        // parameters.append(&mut self.linear3.parameters());
+        // parameters.append(&mut self.linear4.parameters());
         parameters
     }
 }
