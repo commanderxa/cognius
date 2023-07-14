@@ -1,18 +1,20 @@
 use std::{
     cell::RefCell,
-    ops::{Add, Mul, Neg, Range, Sub, Div},
-    rc::Rc, fmt::Display, f64::consts::E,
+    f64::consts::E,
+    fmt::Display,
+    ops::{Add, Div, Mul, Neg, Range, Sub},
+    rc::Rc,
 };
 
 use rand::Rng;
 
-use crate::{tensor_data::TensorData, op::Op, backward::Backward};
+use crate::{backward::Backward, op::Op, tensor_data::TensorData};
 
 #[derive(Clone, Debug, PartialEq)]
 /// # Tensor
-/// 
+///
 /// ### Holds the reference to the inner data inside.
-/// 
+///
 /// See the documentation for `TensorData`.
 pub struct Tensor(pub(crate) Rc<RefCell<TensorData>>);
 
@@ -71,8 +73,8 @@ impl Tensor {
     /// Generates a tesnor within a given range with a step.
     ///
     /// The `start` is inclusive and the `end` is exclusive.
-    /// 
-    /// Note: 
+    ///
+    /// Note:
     /// * (`end` - `start`) / `step` has to be an integer
     /// * if `end` - `start` is negative, then `step` has to be negative
     /// * if `end` - `start` is positive, then `step` has to be positive
@@ -80,8 +82,8 @@ impl Tensor {
         let len = (end - start) / step;
         // necessary cheks
         assert_eq!(
-            len.fract(), 
-            0.0, 
+            len.fract(),
+            0.0,
             "Cannot generate a range, since the length of the tensor is not an integer, try to use other parameters"
         );
         if end - start < 1.0 && step > 0.0 {
@@ -92,12 +94,9 @@ impl Tensor {
         // new tensor
         let mut data = Vec::with_capacity(len as usize);
         for i in 0..len as usize {
-            data.push(start + (step * i as f64));            
+            data.push(start + (step * i as f64));
         }
-        let inner = TensorData::from_f64(
-            data, 
-            vec![len as usize]
-        );
+        let inner = TensorData::from_f64(data, vec![len as usize]);
         Self::new(inner)
     }
 
@@ -106,16 +105,16 @@ impl Tensor {
         self.0.borrow().shape.clone()
     }
 
-    /// Returns the total length of the vector. It obtains the length by taking 
+    /// Returns the total length of the vector. It obtains the length by taking
     /// the product of the shape of the tensor.
     ///
-    /// E.g. if the shape of the tensor is (3, 2, 3), then the length is 
+    /// E.g. if the shape of the tensor is (3, 2, 3), then the length is
     /// (3 * 2 * 3) => 18.
     pub fn length(&self) -> usize {
         self.shape().iter().product()
     }
 
-    /// Fills the given empty tensor with a values with an inputted range. It 
+    /// Fills the given empty tensor with a values with an inputted range. It
     /// also sets the gradients to 0.
     ///
     /// E.g. if the range is (-1.0..1.0) then each value in the tensor will be
@@ -133,10 +132,10 @@ impl Tensor {
         self.0.borrow().data.clone()
     }
 
-    /// Defines the `Tensor` behavior. 
-    /// 
-    /// The tensor property `requires_grad` is `true` by default, which means 
-    /// that the `Tensor` has a gradient, but this gradient might be sent to 
+    /// Defines the `Tensor` behavior.
+    ///
+    /// The tensor property `requires_grad` is `true` by default, which means
+    /// that the `Tensor` has a gradient, but this gradient might be sent to
     /// `None` if is not necessary.
     pub fn requires_grad(self, value: bool) -> Self {
         if value {
@@ -174,11 +173,11 @@ impl Tensor {
     }
 
     /// Matrix multiplication
-    /// 
+    ///
     /// Accepts:
     /// * a: `Tensor`
     /// * b: `Tensor`
-    /// 
+    ///
     /// The inner dimensions of the matrices must be the same.
     pub fn mm(a: Self, b: Self) -> Self {
         // shapes of the tensors
@@ -188,8 +187,8 @@ impl Tensor {
         let mut result = vec![0.0; a_shape[0] * (b_shape[b_shape.len() - 1])];
         // check wether the operation is able to be proceeded
         assert_eq!(
-            a_shape.last().unwrap(), 
-            b_shape.first().unwrap(), 
+            a_shape.last().unwrap(),
+            b_shape.first().unwrap(),
             "The shapes of the tensors must have the same inner dimension -> (M x N) @ (N x M), but you have tensors A: {:?} and B: {:?}", 
             format!("({a_shape:?})").replace("[", "").replace("]", ""), 
             format!("({b_shape:?})").replace("[", "").replace("]", ""), 
@@ -198,8 +197,8 @@ impl Tensor {
         let a_data = a.item();
         let b_data = b.t().item();
 
-        // iterate over the result tensor, it zips the slices of the left and 
-        // right tensors then it multiplies the two zipped values and returns 
+        // iterate over the result tensor, it zips the slices of the left and
+        // right tensors then it multiplies the two zipped values and returns
         // the slice back, after it sums the vector to obtain the value
         for i in 0..a_shape[0] {
             for j in 0..b_shape[1] {
@@ -215,25 +214,25 @@ impl Tensor {
             }
         }
         let inner = TensorData::from_op(
-            result, 
-            vec![a_shape[0], b_shape[b_shape.len() - 1]], 
-            vec![a, b], 
-            Op::MatMul
+            result,
+            vec![a_shape[0], b_shape[b_shape.len() - 1]],
+            vec![a, b],
+            Op::MatMul,
         );
         Tensor::new(inner)
     }
 
     /// Returns the tensor of the new shape.
-    /// 
+    ///
     /// Tensor of shape (2, 3) might be viewed as (3, 2), (6, 1), (1, 6).
-    /// Tensor can be viewed as any shape, only if the length of this shape is 
+    /// Tensor can be viewed as any shape, only if the length of this shape is
     /// the same as the length of the previous shape.
     pub fn view(&self, shape: Vec<usize>) -> Self {
         assert_eq!(
-            self.length(), 
-            shape.iter().product(), 
-            "Length of the new shape: {} does not match the length of the old one: {}", 
-            shape.iter().product::<usize>(), 
+            self.length(),
+            shape.iter().product(),
+            "Length of the new shape: {} does not match the length of the old one: {}",
+            shape.iter().product::<usize>(),
             self.length()
         );
         let inner = TensorData::from_f64(self.item(), shape);
@@ -241,23 +240,23 @@ impl Tensor {
     }
 
     /// Reshapes the tensor.
-    /// 
+    ///
     /// Tensor of shape (2, 3) might be reshaped to (3, 2), (6, 1), (1, 6).
-    /// Tensor can be reshaped into any shape, only if the length of this shape 
+    /// Tensor can be reshaped into any shape, only if the length of this shape
     /// is the same as the length of the previous shape.
     pub fn reshape(&self, shape: Vec<usize>) {
         assert_eq!(
-            self.length(), 
-            shape.iter().product(), 
-            "Length of the new shape: {} does not match the length of the old one: {}", 
-            shape.iter().product::<usize>(), 
+            self.length(),
+            shape.iter().product(),
+            "Length of the new shape: {} does not match the length of the old one: {}",
+            shape.iter().product::<usize>(),
             self.length()
         );
         self.0.borrow_mut().shape = shape;
     }
 
     /// Exponents each value of the `Tensor`.
-    /// 
+    ///
     /// `exp(x)` => `e^(x)`.
     pub fn exp(&self) -> Tensor {
         let mut data = self.item();
@@ -265,21 +264,16 @@ impl Tensor {
             data[i] = E.powf(data[i]);
         }
         let inner = TensorData::from_op(
-            data, 
-            self.shape(), 
-            vec![self.clone()], 
-            Op::Exp(self.clone())
+            data,
+            self.shape(),
+            vec![self.clone()],
+            Op::Exp(self.clone()),
         );
         Tensor::new(inner)
     }
 
     /// Converts the tensor to a `String`, so that it can be printed.
-    fn tensor_to_str(
-        &self, 
-        tensor_str: String, 
-        level: usize, 
-        range: Range<usize>
-    ) -> String {
+    fn tensor_to_str(&self, tensor_str: String, level: usize, range: Range<usize>) -> String {
         // the length of the range
         let len: usize = range.end - range.start;
         // the current dimension from the shape
@@ -322,11 +316,8 @@ impl Tensor {
             } else {
                 // else, fall further into the next dimensions
                 result.push_str(
-                    self.tensor_to_str(
-                        tensor_str.clone(), 
-                        level + 1, 
-                        i..(i + conv)
-                    ).as_str(),
+                    self.tensor_to_str(tensor_str.clone(), level + 1, i..(i + conv))
+                        .as_str(),
                 );
                 // make indents for following tensor (if exists)
                 if i != range.end - conv {
@@ -351,7 +342,7 @@ impl Tensor {
                 .iter()
                 .zip(data)
                 .map(|(a, b)| a + b)
-                .collect()
+                .collect(),
         );
     }
 
@@ -365,27 +356,19 @@ impl Tensor {
     }
 
     /// Powers the `Tensor`
-    /// 
+    ///
     /// Accepts `n` integer in which the `Tensor` will be powered.
-    /// 
+    ///
     /// For backpropagation it stores the `n` inside the `Op::Pow(n)`.
     pub fn pow(self, n: i32) -> Tensor {
-        let data = self
-            .item()
-            .iter()
-            .map(|a| a.powi(n))
-            .collect::<Vec<f64>>();
-        let inner = TensorData::from_op(
-            data, self.shape(), 
-            vec![self], 
-            Op::Pow(n)
-        );
+        let data = self.item().iter().map(|a| a.powi(n)).collect::<Vec<f64>>();
+        let inner = TensorData::from_op(data, self.shape(), vec![self], Op::Pow(n));
         Self::new(inner)
     }
 
     /// Backward
-    /// 
-    /// Computes the gradients of all the tensors that have been interacting and 
+    ///
+    /// Computes the gradients of all the tensors that have been interacting and
     /// have `requires_grad` set to `true`.
     pub fn backward(&self) {
         self.add_to_grad(vec![1.0; self.length()]);
@@ -405,28 +388,23 @@ impl Tensor {
     }
 
     /// Multicast operation
-    /// 
-    /// It ensures that the lower dimensions of the two tensors are the same if 
-    /// they are, then it performs the given operation elementwise, using the 
+    ///
+    /// It ensures that the lower dimensions of the two tensors are the same if
+    /// they are, then it performs the given operation elementwise, using the
     /// lower dimensional tensor as a convolution window.
-    /// 
+    ///
     /// Accepts:
-    /// * gt: data vector of greater `Tensor` 
+    /// * gt: data vector of greater `Tensor`
     /// * lt: data vector of less `Tensor`
     /// * gt_shape: shape of the greater `Tensor`
     /// * lt_shape: shape of the less `Tensor`
     /// * op: operation `Op`, permitted operations are `Add` and `Mul`
-    fn multicast_op(
-        gt: &Tensor, 
-        lt: &Tensor, 
-        op: Op
-    ) -> Vec<f64> {
+    fn multicast_op(gt: &Tensor, lt: &Tensor, op: Op) -> Vec<f64> {
         let gt_shape = gt.shape();
         let lt_shape = lt.shape();
         // ensure that th eoperation is within the permitted ones
-        let pass = (op == Op::Add || op == Op::Sub || op == Op::Mul) 
-            && (gt_shape.len() > lt_shape.len() 
-                || gt_shape.len() == lt_shape.len());
+        let pass = (op == Op::Add || op == Op::Sub || op == Op::Mul)
+            && (gt_shape.len() > lt_shape.len() || gt_shape.len() == lt_shape.len());
         assert_eq!(true, pass);
 
         // remove the batch (1) dimensions
@@ -443,8 +421,7 @@ impl Tensor {
             same_shape.remove(i);
         }
         assert_eq!(
-            same_shape, 
-            lt_shape, 
+            same_shape, lt_shape,
             "The lower dimensions of the two tensors are not equal"
         );
 
@@ -453,34 +430,34 @@ impl Tensor {
         match op {
             Op::Add => {
                 for i in (0..gt.length()).step_by(conv) {
-                    let mut tmp = gt.0.borrow_mut().data[i..i+conv]
+                    let mut tmp = gt.0.borrow_mut().data[i..i + conv]
                         .iter()
                         .zip(lt.0.borrow().data.clone())
                         .map(|(a, b)| a + b)
                         .collect::<Vec<f64>>();
                     res.append(&mut tmp);
                 }
-            },
+            }
             Op::Sub => {
                 for i in (0..gt.length()).step_by(conv) {
-                    let mut tmp = gt.0.borrow_mut().data[i..i+conv]
+                    let mut tmp = gt.0.borrow_mut().data[i..i + conv]
                         .iter()
                         .zip(lt.0.borrow().data.clone())
                         .map(|(a, b)| a - b)
                         .collect::<Vec<f64>>();
                     res.append(&mut tmp);
                 }
-            },
+            }
             Op::Mul => {
                 for i in (0..gt.length()).step_by(conv) {
-                    let mut tmp = gt.0.borrow_mut().data[i..i+conv]
+                    let mut tmp = gt.0.borrow_mut().data[i..i + conv]
                         .iter()
                         .zip(lt.0.borrow().data.clone())
                         .map(|(a, b)| a * b)
                         .collect::<Vec<f64>>();
                     res.append(&mut tmp);
                 }
-            },
+            }
             _ => unreachable!(),
         }
         res
@@ -515,12 +492,7 @@ impl Add for Tensor {
             res_shape = gt_shape;
             res = Self::multicast_op(gt, lt, op.clone());
         }
-        let inner = TensorData::from_op(
-            res, 
-            res_shape, 
-            vec![self, rhs], 
-            op
-        );
+        let inner = TensorData::from_op(res, res_shape, vec![self, rhs], op);
         Self::new(inner)
     }
 }
@@ -575,12 +547,7 @@ impl Mul for Tensor {
             res_shape = gt_shape;
             res = Self::multicast_op(gt, lt, op.clone());
         }
-        let inner = TensorData::from_op(
-            res, 
-            res_shape, 
-            vec![self, rhs], 
-            op
-        );
+        let inner = TensorData::from_op(res, res_shape, vec![self, rhs], op);
         Self::new(inner)
     }
 }
@@ -643,12 +610,7 @@ impl Sub for Tensor {
             res_shape = gt_shape;
             res = Self::multicast_op(gt, lt, op.clone());
         }
-        let inner = TensorData::from_op(
-            res, 
-            res_shape, 
-            vec![self, rhs], 
-            op
-        );
+        let inner = TensorData::from_op(res, res_shape, vec![self, rhs], op);
         Self::new(inner)
     }
 }
@@ -665,15 +627,45 @@ impl Display for Tensor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let data = String::new();
         let shape = self.shape();
-        let data = self.tensor_to_str(
-            data, 
-            0, 
-            0..shape.iter().product()
-        );
-        let shape_str = format!("({shape:?})")
-            .replace("[", "")
-            .replace("]", "");
+        let data = self.tensor_to_str(data, 0, 0..shape.iter().product());
+        let shape_str = format!("({shape:?})").replace("[", "").replace("]", "");
         let res = format!("Tensor({data}, shape: {shape_str}, dtype: f64)");
         write!(f, "{res}")
     }
+}
+
+// MACROS
+
+#[macro_export]
+macro_rules! randn {
+    ($($element:expr),+) => {{
+        use rand::Rng;
+
+        // variables for tensor
+        let shape_len = $crate::count_shape![@COUNT; $($element),*];
+        let mut shape = Vec::new();
+        let mut data = Vec::new();
+
+        // fill the variables
+        $(shape.push($element);)*;
+        let length = shape.iter().product();
+        for _ in 0..length {
+            data.resize(length, rand::thread_rng().gen_range(0.0..1.0))
+        }
+
+        // make a tensor based on the variables
+        Tensor::from_f64(data, shape)
+    }};
+    ($($element:expr,)*) => {{
+        crate::tensor::randn![$($element),*]
+    }};
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! count_shape {
+    (@COUNT; $($element:expr),*) => {
+        <[()]>::len(&[$($crate::count_shape![@SUBST; $element]),*])
+    };
+    (@SUBST; $_element:expr) => { () };
 }

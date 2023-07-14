@@ -17,9 +17,7 @@ impl SGD {
                 .unwrap()
                 .iter()
                 .zip(self.parameters[i].item())
-                .map(|(a, b)| {
-                    b - a * self.lr
-                })
+                .map(|(a, b)| b - a * self.lr)
                 .collect();
             self.parameters[i].set_data(data);
         }

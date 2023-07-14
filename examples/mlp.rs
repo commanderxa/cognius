@@ -9,10 +9,7 @@ fn main() {
     let mlp = MLP::new([5, 1]);
     let optim = SGD::new(mlp.parameters(), 3e-4);
 
-    let data = vec![
-        Tensor::randn(vec![4, 5]) * 100.0,
-        Tensor::randn(vec![4, 5]),
-    ];
+    let data = vec![Tensor::randn(vec![4, 5]) * 100.0, Tensor::randn(vec![4, 5])];
     let targets = vec![
         Tensor::from_f64(vec![1.0], vec![1, 1]),
         Tensor::from_f64(vec![0.0], vec![1, 1]),
