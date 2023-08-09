@@ -371,11 +371,19 @@ impl Tensor {
     /// Computes the gradients of all the tensors that have been interacting and
     /// have `requires_grad` set to `true`.
     pub fn backward(&self) {
-        self.add_to_grad(vec![1.0; self.length()]);
+        let end_grad = self.0.borrow()._prev[0]
+            .item()
+            .iter()
+            .map(|a| a * 2.0)
+            .collect::<Vec<f64>>();
+        self.add_to_grad(end_grad);
         self._backward()
     }
 
-    pub fn _backward(&self) {
+    /// Backward private
+    ///
+    /// Evokes Backward function in all components of the computational graph
+    fn _backward(&self) {
         let t = self.0.borrow();
         if t.grad.is_some() && t._op.is_some() {
             t._op.as_ref().unwrap().backward(&t);

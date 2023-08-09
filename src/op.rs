@@ -11,6 +11,7 @@ pub enum Op {
     MatMul,
     ReLU,
     Sigmoid(Tensor),
+    MSE,
 }
 
 impl std::fmt::Display for Op {
@@ -24,6 +25,7 @@ impl std::fmt::Display for Op {
             Op::MatMul => write!(f, "MatMul"),
             Op::ReLU => write!(f, "ReLU"),
             Op::Sigmoid(n) => write!(f, "Sigmoid({n})"),
+            Op::MSE => write!(f, "MSE"),
         }
     }
 }

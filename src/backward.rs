@@ -59,7 +59,7 @@ impl Backward for Op {
                     t.data
                         .iter()
                         .zip(grad)
-                        .map(|(x, y)| n as f64 * x.powi(n - 1) * y)
+                        .map(|(x, g)| n as f64 * x.powi(n - 1) * g)
                         .collect(),
                 );
             }
@@ -113,6 +113,17 @@ impl Backward for Op {
                 let grad = tensor.grad.clone().unwrap();
                 let dx = grad.iter().zip(res.item()).map(|(a, b)| a * b).collect();
                 tensor._prev[0].add_to_grad(dx);
+            }
+
+            Op::MSE => {
+                let t = tensor._prev[0].0.borrow();
+                let t_sub = t._prev[0].0.borrow();
+                let out = t_sub._prev[0].item();
+                let target = t_sub._prev[1].item();
+                let grad = out.iter().zip(target).map(|(x, y)| 2.0 * (x - y)).collect::<Vec<f64>>();
+                drop(t_sub);
+                drop(t);
+                tensor._prev[0].add_to_grad(grad);
             }
         }
     }

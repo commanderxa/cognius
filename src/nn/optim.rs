@@ -17,7 +17,12 @@ impl SGD {
                 .unwrap()
                 .iter()
                 .zip(self.parameters[i].item())
-                .map(|(a, b)| b - a * self.lr)
+                .map(|(a, b)| {
+                    // w_i = w_(i-1) - lr * grad
+                    // b = w(i-1)
+                    // a = grad
+                    b - self.lr * a
+                })
                 .collect();
             self.parameters[i].set_data(data);
         }

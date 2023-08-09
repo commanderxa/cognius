@@ -4,13 +4,43 @@ use minigrad::{
 };
 
 fn main() {
-    let epochs = 2000;
+    let epochs = 20;
     let criterion = MSELoss::new();
-    let mlp = MLP::new([5, 1]);
-    let optim = SGD::new(mlp.parameters(), 3e-4);
+    let mlp = MLP::new([2, 1]);
+    let optim = SGD::new(mlp.parameters(), 0.1);
 
-    let data = vec![Tensor::randn(vec![4, 5]) * 100.0, Tensor::randn(vec![4, 5])];
+    let data = vec![
+        Tensor::from_f64(vec![9.0, 3.0], vec![1, 2]),
+        Tensor::from_f64(vec![2.0, 3.0], vec![1, 2]),
+        Tensor::from_f64(vec![3.0, 7.0], vec![1, 2]),
+        Tensor::from_f64(vec![8.0, 6.0], vec![1, 2]),
+        Tensor::from_f64(vec![4.0, 4.0], vec![1, 2]),
+        Tensor::from_f64(vec![4.0, 1.0], vec![1, 2]),
+        Tensor::from_f64(vec![5.0, 2.0], vec![1, 2]),
+        Tensor::from_f64(vec![2.0, 5.0], vec![1, 2]),
+        Tensor::from_f64(vec![5.0, 6.0], vec![1, 2]),
+        Tensor::from_f64(vec![7.0, 2.0], vec![1, 2]),
+        Tensor::from_f64(vec![9.0, 1.0], vec![1, 2]),
+    ];
     let targets = vec![
+        Tensor::from_f64(vec![0.0], vec![1, 1]),
+        Tensor::from_f64(vec![1.0], vec![1, 1]),
+        Tensor::from_f64(vec![1.0], vec![1, 1]),
+        Tensor::from_f64(vec![1.0], vec![1, 1]),
+        Tensor::from_f64(vec![1.0], vec![1, 1]),
+        Tensor::from_f64(vec![0.0], vec![1, 1]),
+        Tensor::from_f64(vec![0.0], vec![1, 1]),
+        Tensor::from_f64(vec![1.0], vec![1, 1]),
+        Tensor::from_f64(vec![1.0], vec![1, 1]),
+        Tensor::from_f64(vec![0.0], vec![1, 1]),
+        Tensor::from_f64(vec![0.0], vec![1, 1]),
+    ];
+
+    let test_data = vec![
+        Tensor::from_f64(vec![6.0, 6.0], vec![1, 2]),
+        Tensor::from_f64(vec![8.0, 2.0], vec![1, 2]),
+    ];
+    let test_targets = vec![
         Tensor::from_f64(vec![1.0], vec![1, 1]),
         Tensor::from_f64(vec![0.0], vec![1, 1]),
     ];
@@ -18,6 +48,8 @@ fn main() {
     for epoch in 1..=epochs {
         let mut losses = 0.0;
         for (x, y) in data.iter().zip(targets.clone()) {
+            optim.zero_grad();
+
             let x = x.clone();
             let y = y.clone();
             let out = mlp.forward(x);
@@ -25,21 +57,17 @@ fn main() {
             let loss = criterion.measure(out, y);
 
             loss.backward();
-            if epoch == 1 {
-                println!("BACKWARD:\n{:?}", mlp.parameters());
-            }
+            println!("BACKWARD:\n{:?}", mlp.parameters());
+
             optim.step();
-            if epoch == 1 {
-                println!("STEP:\n{:?}\n", mlp.parameters());
-            }
-            optim.zero_grad();
+            println!("STEP:\n{:?}\n", mlp.parameters());
 
             losses += loss.item()[0];
         }
         println!("Epoch: {epoch}/{epochs} | loss: {:.10}", losses);
     }
 
-    for (x, y) in data.iter().zip(targets.clone()) {
+    for (x, y) in test_data.iter().zip(test_targets.clone()) {
         let out = mlp.forward(x.clone());
 
         let loss = criterion.measure(out.clone(), y.clone());

@@ -78,6 +78,8 @@ impl MSELoss {
     }
 
     pub fn measure(&self, a: Tensor, b: Tensor) -> Tensor {
-        (a - b).pow(2)
+        let t = (a - b).pow(2);
+        let inner = TensorData::from_op(t.item(), t.shape(), vec![t], Op::MSE);
+        Tensor::new(inner)
     }
 }
