@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use minigrad::{nn, Tensor};
+    use cognius::{nn, Tensor};
 
     #[test]
     fn sigmoid() {

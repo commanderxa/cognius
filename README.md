@@ -1,4 +1,4 @@
-### Minigrad
+### COGNIUS
 
 A pure `Rust` implementation of `micrograd`.
 

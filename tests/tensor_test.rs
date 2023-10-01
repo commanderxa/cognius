@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use minigrad::{randn, Tensor};
+    use cognius::{randn, Tensor};
 
     #[test]
     /// Valid shape of the tensor

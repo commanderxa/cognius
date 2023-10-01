@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use minigrad::{
+    use cognius::{
         nn::{optim::SGD, sigmoid, Linear, Module},
         Tensor,
     };

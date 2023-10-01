@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use minigrad::{
+    use cognius::{
         data::{data::Sample, dataloader::Dataloader, dataset::Dataset},
         Tensor,
     };

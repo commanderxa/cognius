@@ -1,4 +1,4 @@
-use minigrad::{
+use cognius::{
     nn::{sigmoid, Linear, Module},
     Tensor,
 };

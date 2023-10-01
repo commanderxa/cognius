@@ -1,4 +1,4 @@
-use minigrad::{
+use cognius::{
     nn::{optim::SGD, Linear, MSELoss, Module},
     Tensor,
 };
