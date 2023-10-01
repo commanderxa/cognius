@@ -4,10 +4,10 @@ use minigrad::{
 };
 
 fn main() {
-    let epochs = 20;
+    let epochs = 10;
     let criterion = MSELoss::new();
     let mlp = MLP::new([2, 1]);
-    let optim = SGD::new(mlp.parameters(), 0.1);
+    let optim = SGD::new(mlp.parameters(), 1.0);
 
     let data = vec![
         Tensor::from_f64(vec![9.0, 3.0], vec![1, 2]),
@@ -58,9 +58,7 @@ fn main() {
 
             loss.backward();
             println!("BACKWARD:\n{:?}", mlp.parameters());
-
             optim.step();
-            println!("STEP:\n{:?}\n", mlp.parameters());
 
             losses += loss.item()[0];
         }
@@ -79,10 +77,6 @@ fn main() {
             loss.item()[0]
         );
         loss.backward();
-        for (i, param) in mlp.parameters().iter().enumerate() {
-            let sum = param.grad().unwrap().iter().sum::<f64>();
-            println!("{i} ==> {sum:.50}");
-        }
     }
 }
 

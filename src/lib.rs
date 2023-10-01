@@ -1,4 +1,5 @@
 pub mod backward;
+pub mod data;
 pub mod nn;
 mod op;
 pub mod tensor;
