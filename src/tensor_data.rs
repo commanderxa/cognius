@@ -28,7 +28,7 @@ impl TensorData {
         Self {
             data: vec![0.0; len],
             grad: Some(vec![0.0; len]),
-            shape: shape,
+            shape,
             _prev: vec![],
             _op: None,
         }
@@ -61,9 +61,9 @@ impl TensorData {
         let grad = vec![0.0; data.len()];
         // Self::fill_grad(&mut grad);
         Self {
-            data: data,
+            data,
             grad: Some(grad),
-            shape: shape,
+            shape,
             _prev: vec![],
             _op: None,
         }
@@ -74,9 +74,9 @@ impl TensorData {
         let grad = vec![0.0; data.len()];
         // Self::fill_grad(&mut grad);
         Self {
-            data: data,
+            data,
             grad: Some(grad),
-            shape: shape,
+            shape,
             _prev: prev,
             _op: Some(op),
         }

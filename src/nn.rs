@@ -57,8 +57,8 @@ impl Module for Linear {
 
 pub fn relu(x: Tensor) -> Tensor {
     let mut data = x.item();
-    for i in 0..data.len() {
-        data[i] = if data[i] > 0.0 { data[i] } else { 0.0 }
+    for item in data.iter_mut() {
+        *item = if *item > 0.0 { *item } else { 0.0 }
     }
     let inner = TensorData::from_op(data, x.shape(), vec![x], Op::ReLU);
     Tensor::new(inner)
@@ -81,5 +81,11 @@ impl MSELoss {
         let t = (a - b).pow(2);
         let inner = TensorData::from_op(t.item(), t.shape(), vec![t], Op::MSE);
         Tensor::new(inner)
+    }
+}
+
+impl Default for MSELoss {
+    fn default() -> Self {
+        Self::new()
     }
 }

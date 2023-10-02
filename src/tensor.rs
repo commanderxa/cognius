@@ -157,6 +157,11 @@ impl Tensor {
         // let shape = &self.data.borrow().shape;
         let tensor = &self.0.borrow().data;
         let mut shape = self.shape();
+        // add a batch dimension if the shape of a tensor is one dimensional
+        if shape.len() == 1 {
+            shape.push(1);
+            shape.reverse();
+        }
         // new data vector
         let mut data = Vec::with_capacity(self.length());
         // iterate over the tensor by column
@@ -190,13 +195,12 @@ impl Tensor {
             a_shape.last().unwrap(),
             b_shape.first().unwrap(),
             "The shapes of the tensors must have the same inner dimension -> (M x N) @ (N x M), but you have tensors A: {:?} and B: {:?}", 
-            format!("({a_shape:?})").replace("[", "").replace("]", ""), 
-            format!("({b_shape:?})").replace("[", "").replace("]", ""), 
+            format!("({a_shape:?})").replace('[', "").replace(']', ""), 
+            format!("({b_shape:?})").replace('[', "").replace(']', ""), 
         );
         // data of the tensors, the tensor b is transposed
         let a_data = a.item();
         let b_data = b.t().item();
-
         // iterate over the result tensor, it zips the slices of the left and
         // right tensors then it multiplies the two zipped values and returns
         // the slice back, after it sums the vector to obtain the value
@@ -260,8 +264,8 @@ impl Tensor {
     /// `exp(x)` => `e^(x)`.
     pub fn exp(&self) -> Tensor {
         let mut data = self.item();
-        for i in 0..data.len() {
-            data[i] = E.powf(data[i]);
+        for item in data.iter_mut() {
+            *item = E.powf(*item);
         }
         let inner = TensorData::from_op(
             data,
@@ -297,7 +301,7 @@ impl Tensor {
             }
             // if the iteration is over the last 2 dimensions => print a matrix
             else if shape_size - 2 == level {
-                result.push_str("[");
+                result.push('[');
                 for j in 0..self.shape()[level + 1] {
                     let mut num = format!("{:.4}", self.0.borrow().data[i + j]);
                     if j < self.shape()[level + 1] - 1 {
@@ -311,7 +315,7 @@ impl Tensor {
                     let space = String::from(" ").repeat(shape_size - 2);
                     result.push_str(space.as_str());
                 } else {
-                    result.push_str("]");
+                    result.push(']');
                 }
             } else {
                 // else, fall further into the next dimensions
@@ -328,7 +332,7 @@ impl Tensor {
             }
         }
         // denote the end of the dimension
-        result.push_str("]");
+        result.push(']');
         result
     }
 
@@ -413,7 +417,7 @@ impl Tensor {
         // ensure that th eoperation is within the permitted ones
         let pass = (op == Op::Add || op == Op::Sub || op == Op::Mul)
             && (gt_shape.len() > lt_shape.len() || gt_shape.len() == lt_shape.len());
-        assert_eq!(true, pass);
+        assert!(pass);
 
         // remove the batch (1) dimensions
         let mut lt_shape = lt_shape.clone();
@@ -488,8 +492,8 @@ impl Add for Tensor {
         let op = Op::Add;
 
         if rhs_len == 1 {
-            for i in 0..self.length() {
-                res[i] += rhs.0.borrow_mut().data[0];
+            for item in res.iter_mut() {
+                *item += rhs.0.borrow_mut().data[0];
             }
         } else {
             let (gt, gt_shape, lt, _lt_shape) = if self_len > rhs_len {
@@ -543,8 +547,8 @@ impl Mul for Tensor {
         let op = Op::Mul;
 
         if rhs_len == 1 {
-            for i in 0..self.length() {
-                res[i] *= rhs.0.borrow_mut().data[0];
+            for item in res.iter_mut() {
+                *item *= rhs.0.borrow_mut().data[0];
             }
         } else {
             let (gt, gt_shape, lt, _lt_shape) = if self_len > rhs_len {
@@ -606,8 +610,8 @@ impl Sub for Tensor {
         let op = Op::Sub;
 
         if rhs_len == 1 {
-            for i in 0..self.length() {
-                res[i] -= rhs.0.borrow_mut().data[0];
+            for item in res.iter_mut() {
+                *item -= rhs.0.borrow_mut().data[0];
             }
         } else {
             let (gt, gt_shape, lt, _lt_shape) = if self_len > rhs_len {
@@ -636,7 +640,7 @@ impl Display for Tensor {
         let data = String::new();
         let shape = self.shape();
         let data = self.tensor_to_str(data, 0, 0..shape.iter().product());
-        let shape_str = format!("({shape:?})").replace("[", "").replace("]", "");
+        let shape_str = format!("({shape:?})").replace('[', "").replace(']', "");
         let res = format!("Tensor({data}, shape: {shape_str}, dtype: f64)");
         write!(f, "{res}")
     }
@@ -656,7 +660,7 @@ macro_rules! randn {
         Tensor::randn(shape)
     }};
     ($($element:expr,)*) => {{
-        crate::tensor::randn![$($element),*]
+        $crate::tensor::randn![$($element),*]
     }};
 }
 

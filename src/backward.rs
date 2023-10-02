@@ -52,7 +52,7 @@ impl Backward for Op {
             // Power backward
             // d(x^n)/dx * grad = n * x^(n-1) * grad
             Op::Pow(n) => {
-                let n = n.clone();
+                let n = *n;
                 let t = tensor;
                 let grad = t.grad.clone().unwrap();
                 t._prev[0].add_to_grad(
@@ -99,8 +99,8 @@ impl Backward for Op {
                 let t = tensor;
                 let mut prev = t._prev[0].0.borrow_mut();
                 let grad = prev.grad.as_mut().unwrap();
-                for i in 0..t.data.len() {
-                    grad[i] = if t.data[i] > 0.0 { 1.0 } else { 0.0 }
+                for (i, g) in grad.iter_mut().enumerate() {
+                    *g = if t.data[i] > 0.0 { 1.0 } else { 0.0 }
                 }
             }
 
@@ -120,7 +120,11 @@ impl Backward for Op {
                 let t_sub = t._prev[0].0.borrow();
                 let out = t_sub._prev[0].item();
                 let target = t_sub._prev[1].item();
-                let grad = out.iter().zip(target).map(|(x, y)| 2.0 * (x - y)).collect::<Vec<f64>>();
+                let grad = out
+                    .iter()
+                    .zip(target)
+                    .map(|(x, y)| 2.0 * (x - y))
+                    .collect::<Vec<f64>>();
                 drop(t_sub);
                 drop(t);
                 tensor._prev[0].add_to_grad(grad);

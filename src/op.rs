@@ -11,6 +11,7 @@ pub enum Op {
     MatMul,
     ReLU,
     Sigmoid(Tensor),
+    #[allow(clippy::upper_case_acronyms)]
     MSE,
 }
 

@@ -43,10 +43,10 @@ impl<T> Dataloader<T> {
             indices.shuffle(&mut thread_rng());
         }
         Self(Rc::new(RefCell::new(DataloaderInner {
-            dataset: dataset,
-            batch_size: batch_size,
-            shuffle: shuffle,
-            indices: indices,
+            dataset,
+            batch_size,
+            shuffle,
+            indices,
             index: 0,
         })))
     }
@@ -77,6 +77,6 @@ impl<T> Iterator for Dataloader<T> {
         let sample = Some(inner.dataset.sample(inner.indices[inner.index]));
         // increment the index
         inner.increment_index();
-        return sample;
+        sample
     }
 }
