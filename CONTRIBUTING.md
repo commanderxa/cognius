@@ -2,7 +2,7 @@
 
 ## Project
 
-This is a deep learning library that is created for use in rust and python.
+This is a deep learning library that is created for `rust` and `python`.
 
 ## Setup
 

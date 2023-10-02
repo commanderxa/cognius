@@ -648,21 +648,12 @@ impl Display for Tensor {
 macro_rules! randn {
     ($($element:expr),+) => {{
         use rand::Rng;
-
-        // variables for tensor
-        let shape_len = $crate::count_shape![@COUNT; $($element),*];
+        // get shape
         let mut shape = Vec::new();
-        let mut data = Vec::new();
-
-        // fill the variables
+        // fill the shape
         $(shape.push($element);)*;
-        let length = shape.iter().product();
-        for _ in 0..length {
-            data.resize(length, rand::thread_rng().gen_range(0.0..1.0))
-        }
-
-        // make a tensor based on the variables
-        Tensor::from_f64(data, shape)
+        // pass the shape to the `randn` method
+        Tensor::randn(shape)
     }};
     ($($element:expr,)*) => {{
         crate::tensor::randn![$($element),*]
