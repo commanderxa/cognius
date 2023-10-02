@@ -1,22 +1,12 @@
-### COGNIUS
+# COGNIUS
 
 A pure `Rust` implementation of `micrograd`.
 
-## Setup
+## Usage
 
-Requires `Rust` and `cargo`.
-
-## Examples
-
-See `examples` directory.
-
-To run an example:
-
-`cargo run --example <example name>`, 
-
-e.g. `cargo run --example simple`
+See `/examples` for usage examples.
 
 ## License
 
-Licensed under the MIT license. 
+Licensed under the MIT license.
 See the `LICENSE.txt`.
