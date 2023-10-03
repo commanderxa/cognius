@@ -186,10 +186,18 @@ impl Tensor {
     /// The inner dimensions of the matrices must be the same.
     pub fn mm(a: Self, b: Self) -> Self {
         // shapes of the tensors
-        let a_shape = a.shape();
-        let b_shape = b.shape();
+        let mut a_shape: Vec<usize> = a.shape();
+        let b_shape: Vec<usize> = b.shape();
+        // get batch dimensions if they exist
+        let mut batches: Vec<usize> = vec![];
+        for i in 2..a_shape.len() {
+            batches.push(a_shape[i - 2]);
+        }
+        // remove batch dimensions from the A tensor shape
+        a_shape.drain(0..batches.len());
+        let batch_prod = batches.iter().product::<usize>();
         // new tensor result
-        let mut result = vec![0.0; a_shape[0] * (b_shape[b_shape.len() - 1])];
+        let mut result = vec![0.0; batch_prod * a_shape[0] * (b_shape[b_shape.len() - 1])];
         // check wether the operation is able to be proceeded
         assert_eq!(
             a_shape.last().unwrap(),
@@ -201,28 +209,35 @@ impl Tensor {
         // data of the tensors, the tensor b is transposed
         let a_data = a.item();
         let b_data = b.t().item();
-        // iterate over the result tensor, it zips the slices of the left and
-        // right tensors then it multiplies the two zipped values and returns
-        // the slice back, after it sums the vector to obtain the value
-        for i in 0..a_shape[0] {
-            for j in 0..b_shape[1] {
-                let b_data = &b_data[(j * a_shape[1])..(j * a_shape[1] + a_shape[1])];
-                result[b_shape[1] * i + j] = a_data
-                    [(i * a_shape[1])..(i * a_shape[1] + a_shape[1])]
-                    .iter()
-                    .zip(b_data)
-                    .map(|(&a, &b)| a * b)
-                    .collect::<Vec<f64>>()
-                    .iter()
-                    .sum();
+        let m = a_shape[0];
+        let n = a_shape[1];
+        let p = b_shape[1];
+        // iterate over the batch dimensions
+        // `k` is a batch dimension
+        for k in 0..batch_prod {
+            // iterate over the result tensor, it zips the slices of the left and
+            // right tensors then it multiplies the two zipped values and returns
+            // the slice back, after it sums the vector to obtain the value
+            for i in 0..m {
+                for j in 0..p {
+                    let b_data = &b_data[(j * n)..(j * n + n)];
+                    result[k * m * p + i * p + j] = a_data
+                        [(k * m * n + i * n)..(k * m * n + i * n + n)]
+                        .iter()
+                        .zip(b_data)
+                        .map(|(&a, &b)| a * b)
+                        .collect::<Vec<f64>>()
+                        .iter()
+                        .sum();
+                }
             }
         }
-        let inner = TensorData::from_op(
-            result,
-            vec![a_shape[0], b_shape[b_shape.len() - 1]],
-            vec![a, b],
-            Op::MatMul,
-        );
+        // add batch dimensions to the new shape
+        let new_shape = batches
+            .into_iter()
+            .chain(vec![a_shape[0], b_shape[b_shape.len() - 1]])
+            .collect();
+        let inner = TensorData::from_op(result, new_shape, vec![a, b], Op::MatMul);
         Tensor::new(inner)
     }
 
