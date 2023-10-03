@@ -209,6 +209,7 @@ impl Tensor {
         // data of the tensors, the tensor b is transposed
         let a_data = a.item();
         let b_data = b.t().item();
+        // literal notations for matrix dimensions for the conviniency and comprehension
         let m = a_shape[0];
         let n = a_shape[1];
         let p = b_shape[1];
