@@ -2,6 +2,10 @@
 
 A pure `Rust` implementation of `micrograd`.
 
+## Requirements
+
+Rust >= 1.73
+
 ## Usage
 
 See `/examples` for usage examples.

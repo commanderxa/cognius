@@ -1,6 +1,6 @@
 use std::cell::Ref;
 
-use crate::{op::Op, tensor_data::TensorData, Tensor};
+use crate::{linalg, op::Op, tensor_data::TensorData, Tensor};
 
 /// Backward trait for backpropagation operation.
 pub trait Backward {
@@ -89,8 +89,13 @@ impl Backward for Op {
                 .requires_grad(false);
                 let a = tensor._prev[0].t();
                 let b = tensor._prev[1].t();
-                tensor._prev[0].add_to_grad(Tensor::mm(d_c.clone(), b).item());
-                tensor._prev[1].add_to_grad(Tensor::mm(a, d_c).item());
+                tensor._prev[0].add_to_grad(linalg::matmul(d_c.clone(), b).item());
+                tensor._prev[1].add_to_grad(linalg::matmul(a, d_c).item());
+            }
+
+            // Cross Section Multiplication backward
+            Op::Cross => {
+                todo!();
             }
 
             // ReLU backward

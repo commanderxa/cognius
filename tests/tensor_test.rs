@@ -76,26 +76,6 @@ mod tests {
     }
 
     #[test]
-    /// Matrix multiplication
-    fn mm_2d() {
-        let a = Tensor::from_f64(vec![0., 1., 2., 3., 4., 5.], vec![2, 3]);
-        let b: Tensor = Tensor::from_f64(vec![6., 7., 8., 9., 10., 11.], vec![3, 2]);
-        let c = Tensor::from_f64(vec![28., 31., 100., 112.], vec![2, 2]);
-        let mm = Tensor::mm(a, b);
-        assert_eq!(mm.item(), c.item());
-        assert_eq!(mm.shape(), c.shape());
-    }
-
-    #[test]
-    #[should_panic]
-    /// Matrix multiplication
-    fn mm_2d_panic() {
-        let a: Tensor = Tensor::from_f64(vec![6., 7., 8., 9., 10., 11.], vec![3, 2]);
-        let b = Tensor::from_f64(vec![28., 31., 100., 112.], vec![2, 2]);
-        Tensor::mm(b, a);
-    }
-
-    #[test]
     /// New tensor of ordered numbers
     fn arange() {
         let a = Tensor::arange(0., 6., 1.);

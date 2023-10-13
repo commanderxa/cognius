@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use cognius::{
-        data::{sample::Sample, dataloader::Dataloader, dataset::Dataset},
+        data::{dataloader::Dataloader, dataset::Dataset, sample::Sample},
         Tensor,
     };
 

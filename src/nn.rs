@@ -1,6 +1,6 @@
 pub mod optim;
 
-use crate::{op::Op, tensor_data::TensorData, Tensor};
+use crate::{linalg, op::Op, tensor_data::TensorData, Tensor};
 
 pub trait Module {
     fn module_name(&self) -> String;
@@ -39,7 +39,7 @@ impl Module for Linear {
     fn forward(&self, x: Tensor) -> Tensor {
         let weight = self.weight.clone();
         let bias = self.bias.clone();
-        let mut x = Tensor::mm(x, weight);
+        let mut x = linalg::matmul(x, weight);
         if let Some(b) = bias {
             x = x + b;
         }
