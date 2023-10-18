@@ -56,6 +56,11 @@ impl TensorData {
         self.grad = Some(grad);
     }
 
+    /// Returns the original shape of tensor
+    pub fn shape(&self) -> Vec<usize> {
+        self.shape.clone()
+    }
+
     /// Creates a new instance of the TensorData from a Vector.
     pub fn from_f64(data: Vec<f64>, shape: Vec<usize>) -> Self {
         let grad = vec![0.0; data.len()];

@@ -107,7 +107,7 @@ pub fn cross(a: Tensor, b: Tensor) -> Tensor {
     let _ = b_batch_dims.pop();
     for i in 0..a_batch_dims.len() {
         assert!(
-            a_batch_dims[i] == b_batch_dims[i] || b_batch_dims[i] == 1, 
+            a_batch_dims[i] == b_batch_dims[i] || (b_batch_dims[i] == 1 || a_batch_dims[i] == 1),
             "The size of tensor a ({:?}) must match the size of tensor b ({:?}) at a dimension {:?}", 
             format!("{}", a_batch_dims[i]), 
             format!("{}", b_batch_dims[i]), 
@@ -125,22 +125,20 @@ pub fn cross(a: Tensor, b: Tensor) -> Tensor {
     }
     println!("{:?}", batch_expand);
     for i in 0..batch_expand.len() {
-        if batch_expand[i] > 0 {
-            
-        }
+        if batch_expand[i] > 0 {}
     }
     // check dimensional correspondence
     // result init
     let mut result = vec![0.0; a.length()];
     let mut i: usize = 0;
     let mut j: usize = 0;
-    while i < (a.length()-2) {
-        result[i] = (_a[i+1] * _b[j+2]) - (_a[i+2] * _b[j+1]);
-        result[i+1] = (_a[i+2] * _b[j]) - (_a[i] * _b[j+2]);
-        result[i+2] = (_a[i] * _b[j+1]) - (_a[i+1] * _b[j]);
+    while i < (a.length() - 2) {
+        result[i] = (_a[i + 1] * _b[j + 2]) - (_a[i + 2] * _b[j + 1]);
+        result[i + 1] = (_a[i + 2] * _b[j]) - (_a[i] * _b[j + 2]);
+        result[i + 2] = (_a[i] * _b[j + 1]) - (_a[i + 1] * _b[j]);
         i += 2;
         j += 2;
-        if j >= (b.length()-2) {
+        if j >= (b.length() - 2) {
             j = 0;
         }
     }

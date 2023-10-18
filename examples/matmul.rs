@@ -15,4 +15,15 @@ fn main() {
     );
     let c = linalg::cross(a.clone(), b.clone());
     println!("{}", c);
+
+    let a = Tensor::from_f64(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]);
+    let b = a.t();
+    println!("{:?}", a.stride());
+    println!("{:?}", b.stride());
+
+    let a = Tensor::arange(1.0, 9.0, 1.0);
+    let a = a.reshape(vec![2, 2, 2]);
+    let b = 5;
+    let c = a * b;
+    println!("{c}");
 }

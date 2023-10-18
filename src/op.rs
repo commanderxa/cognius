@@ -1,5 +1,6 @@
 use crate::Tensor;
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Debug, PartialEq)]
 /// Operations that are available to apply to `Value`.
 pub enum Op {
@@ -12,7 +13,6 @@ pub enum Op {
     Cross,
     ReLU,
     Sigmoid(Tensor),
-    #[allow(clippy::upper_case_acronyms)]
     MSE,
 }
 
