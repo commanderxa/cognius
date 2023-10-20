@@ -60,7 +60,7 @@ mod tests {
     #[test]
     fn mul_scalar_2d() {
         let a = Tensor::arange(1.0, 11.0, 1.0);
-        let a = a.reshape(vec![2, 5]);
+        let a = a.reshape(&[2, 5]);
         let b = 5;
         let c = a * b;
         assert_eq!(
@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn mul_scalar_3d() {
         let a = Tensor::arange(1.0, 9.0, 1.0);
-        let a = a.reshape(vec![2, 2, 2]);
+        let a = a.reshape(&[2, 2, 2]);
         let b = 5;
         let c = a * b;
         assert_eq!(
@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn mul_3d_by_1d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(vec![2, 2, 2]);
+        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
         let b = Tensor::from_f64(vec![-2.0, 2.0], vec![2]);
         let c = a * b;
         assert_eq!(
@@ -114,7 +114,7 @@ mod tests {
 
     #[test]
     fn mul_3d_by_2d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(vec![2, 2, 2]);
+        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
         let b = Tensor::from_f64(vec![-2.0, 3.0, 10.0, 4.0], vec![2, 2]);
         let c = a * b;
         assert_eq!(
@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn add_scalar_3d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(vec![2, 2, 2]);
+        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
         let b = 2.0;
         let c = a + b;
         assert_eq!(c.storage(), vec![3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]);
@@ -133,15 +133,15 @@ mod tests {
 
     #[test]
     fn add_elementwise_3d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(vec![2, 2, 2]);
-        let b = Tensor::arange(8.0, 0.0, -1.0).reshape(vec![2, 2, 2]);
+        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
+        let b = Tensor::arange(8.0, 0.0, -1.0).reshape(&[2, 2, 2]);
         let c = a + b;
         assert_eq!(c.storage(), vec![9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0]);
     }
 
     #[test]
     fn add_3d_by_2d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(vec![2, 2, 2]);
+        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
         let b = Tensor::from_f64(vec![-2.0, 3.0, 10.0, 4.0], vec![2, 2]);
         let c = a + b;
         assert_eq!(

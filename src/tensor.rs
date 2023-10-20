@@ -123,7 +123,7 @@ impl Tensor {
 
     /// Returns the data of `Tensor` as it is stored.
     pub fn storage(&self) -> Vec<f64> {
-        self.item()
+        self.inner.borrow().data.clone()
     }
 
     /// Computes the stides of a `Tensor`.
@@ -178,7 +178,31 @@ impl Tensor {
 
     /// Returns the data of the tensor.
     pub fn item(&self) -> Vec<f64> {
-        self.inner.borrow().data.clone()
+        let storage = self.storage();
+        let stride = self.stride();
+        let shape = self.shape();
+        let mut mask = vec![0; shape.len()];
+        let mut data = vec![0.0; self.length()];
+        // iterate over storage data
+        for i in 0..self.length() {
+            // compute index of past position of data
+            data[i] = storage[stride.iter().zip(&mask).map(|(a, b)| a * b).sum::<usize>()];
+            // iterate over shape
+            for j in (0..shape.len()).rev() {
+                // skip the properly filled dims
+                if shape[j] - 1 == mask[j] {
+                    continue;
+                }
+                // increment the necessary mask dim
+                mask[j] += 1;
+                // set to 0 all prevous shape dims
+                for k in ((j + 1)..shape.len()).rev() {
+                    mask[k] = 0;
+                }
+                break;
+            }
+        }
+        data
     }
 
     /// Defines the `Tensor` behavior.
@@ -201,29 +225,20 @@ impl Tensor {
     /// The rows become the columns and vice versa.
     ///
     /// E.g. if the shape was (2, 3) it will make (3, 2).
+    pub fn transpose(&self, dim0: usize, dim1: usize) -> Self {
+        let mut t = self.clone();
+        // transpose tensor of 2 and more dimensions
+        if t.shape().len() >= 2 {
+            t.shape.swap(dim0, dim1);
+        }
+        t
+    }
+
+    /// Expects input to be <= 2D and transposes 0 and 1 dims.
+    ///
+    /// 0D and 1D tensors are returned without any transpose performed
     pub fn t(&self) -> Self {
-        // borrow data for easy access
-        // let shape = &self.data.borrow().shape;
-        let tensor = &self.inner.borrow().data;
-        let mut shape = self.shape();
-        // add a batch dimension if the shape of a tensor is one dimensional
-        if shape.len() == 1 {
-            shape.push(1);
-            shape.reverse();
-        }
-        // new data vector
-        let mut data = Vec::with_capacity(self.length());
-        // iterate over the tensor by column
-        for i in 0..shape[1] {
-            for j in 0..shape[0] {
-                data.push(tensor[(j * shape[1]) + i]);
-            }
-        }
-        // reverse the shape
-        shape.reverse();
-        // create a new tensor
-        let inner = TensorData::from_f64(data, shape);
-        Self::new(inner)
+        self.transpose(0, 1)
     }
 
     /// Returns the tensor of the new shape.
@@ -231,7 +246,7 @@ impl Tensor {
     /// Tensor of shape (2, 3) might be viewed as (3, 2), (6, 1), (1, 6).
     /// Tensor can be viewed as any shape, only if the length of this shape is
     /// the same as the length of the previous shape.
-    pub fn view(&self, shape: Vec<usize>) -> Self {
+    pub fn view(&self, shape: &[usize]) -> Self {
         assert_eq!(
             self.length(),
             shape.iter().product(),
@@ -240,7 +255,7 @@ impl Tensor {
             self.length()
         );
         let mut reshaped_t = self.clone();
-        reshaped_t.shape = shape;
+        reshaped_t.shape = shape.to_vec();
         reshaped_t
     }
 
@@ -249,7 +264,7 @@ impl Tensor {
     /// Tensor of shape (2, 3) might be reshaped to (3, 2), (6, 1), (1, 6).
     /// Tensor can be reshaped into any shape, only if the length of this shape
     /// is the same as the length of the previous shape.
-    pub fn reshape(&self, shape: Vec<usize>) -> Self {
+    pub fn reshape(&self, shape: &[usize]) -> Self {
         assert_eq!(
             self.length(),
             shape.iter().product(),
@@ -258,7 +273,7 @@ impl Tensor {
             self.length()
         );
         let mut reshaped_t = self.clone();
-        reshaped_t.shape = shape;
+        reshaped_t.shape = shape.to_vec();
         reshaped_t
     }
 
@@ -313,6 +328,25 @@ impl Tensor {
 
     /// Converts the tensor to a `String`, so that it can be printed.
     fn tensor_to_str(&self, tensor_str: String, level: usize, range: Range<usize>) -> String {
+        let mut width = 1;
+        for i in self.storage() {
+            let s = (i.floor() as i64).to_string();
+            if s.len() > width {
+                width = s.len();
+            }
+        }
+        width += 5;
+        let result = self._tensor_to_str(tensor_str, level, range, width);
+        result
+    }
+
+    fn _tensor_to_str(
+        &self,
+        tensor_str: String,
+        level: usize,
+        range: Range<usize>,
+        width: usize,
+    ) -> String {
         // the length of the range
         let len: usize = range.end - range.start;
         // the current dimension from the shape
@@ -321,14 +355,22 @@ impl Tensor {
         let conv = len / dim;
         // the length of shape vector
         let shape_size = self.shape().len();
-
+        let item = self.item();
         // denote the start of the dimension
         let mut result = String::from("[");
         // iterate over the dimension => print a vector
         for i in (range.start..range.end).step_by(conv) {
             // if the dimension is the last one
+            let mut spaces: usize = 0;
             if shape_size - 1 == level {
-                let mut num = format!("{:.4}", self.inner.borrow().data[i]);
+                let s = (item[i].floor() as i64).to_string();
+                if s.len() < width {
+                    spaces = width - (s.len() + 5);
+                }
+                for _ in 0..spaces {
+                    result.push_str(&" ");
+                }
+                let mut num = format!("{:.4}", item[i]);
                 if i < self.shape()[level] - 1 {
                     num.push_str(", ");
                 }
@@ -338,7 +380,14 @@ impl Tensor {
             else if shape_size - 2 == level {
                 result.push('[');
                 for j in 0..self.shape()[level + 1] {
-                    let mut num = format!("{:.4}", self.inner.borrow().data[i + j]);
+                    let s = (item[i + j].floor() as i64).to_string();
+                    if s.len() < width {
+                        spaces = width - (s.len() + 5);
+                    }
+                    for _ in 0..spaces {
+                        result.push_str(&" ");
+                    }
+                    let mut num = format!("{:.4}", item[i + j]);
                     if j < self.shape()[level + 1] - 1 {
                         num.push_str(", ");
                     }
@@ -355,7 +404,7 @@ impl Tensor {
             } else {
                 // else, fall further into the next dimensions
                 result.push_str(
-                    self.tensor_to_str(tensor_str.clone(), level + 1, i..(i + conv))
+                    self._tensor_to_str(tensor_str.clone(), level + 1, i..(i + conv), width)
                         .as_str(),
                 );
                 // make indents for following tensor (if exists)

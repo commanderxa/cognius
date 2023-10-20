@@ -87,15 +87,15 @@ mod tests {
             vec![3, 4],
         );
         assert_eq!(a.shape, vec![3, 4]);
-        let mut _a = a.reshape(vec![1, 12]);
+        let mut _a = a.reshape(&[1, 12]);
         assert_eq!(_a.shape, vec![1, 12]);
-        _a = a.reshape(vec![12, 1]);
+        _a = a.reshape(&[12, 1]);
         assert_eq!(_a.shape, vec![12, 1]);
-        _a = a.reshape(vec![2, 6]);
+        _a = a.reshape(&[2, 6]);
         assert_eq!(_a.shape, vec![2, 6]);
-        _a = a.reshape(vec![1, 3, 4]);
+        _a = a.reshape(&[1, 3, 4]);
         assert_eq!(_a.shape, vec![1, 3, 4]);
-        _a = a.reshape(vec![2, 2, 3]);
+        _a = a.reshape(&[2, 2, 3]);
         assert_eq!(_a.shape, vec![2, 2, 3]);
         assert_eq!(a.shape, vec![3, 4]);
     }
@@ -107,15 +107,15 @@ mod tests {
             vec![0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.],
             vec![3, 4],
         );
-        let b = a.view(vec![1, 12]);
+        let b = a.view(&[1, 12]);
         assert_eq!(b.shape, vec![1, 12]);
-        let c = a.view(vec![12, 1]);
+        let c = a.view(&[12, 1]);
         assert_eq!(c.shape, vec![12, 1]);
-        let d = a.view(vec![2, 6]);
+        let d = a.view(&[2, 6]);
         assert_eq!(d.shape, vec![2, 6]);
-        let e = a.view(vec![1, 3, 4]);
+        let e = a.view(&[1, 3, 4]);
         assert_eq!(e.shape, vec![1, 3, 4]);
-        let f = a.view(vec![2, 2, 3]);
+        let f = a.view(&[2, 2, 3]);
         assert_eq!(f.shape, vec![2, 2, 3]);
     }
 
@@ -127,7 +127,7 @@ mod tests {
             vec![0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.],
             vec![3, 4],
         );
-        a.reshape(vec![4, 5]);
+        a.reshape(&[4, 5]);
     }
 
     #[test]
