@@ -102,7 +102,7 @@ mod tests {
     }
 
     #[test]
-    fn mul_3d_by_1d() {
+    fn mul_3d_and_1d() {
         let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
         let b = Tensor::from_f64(vec![-2.0, 2.0], vec![2]);
         let c = a * b;
@@ -113,7 +113,7 @@ mod tests {
     }
 
     #[test]
-    fn mul_3d_by_2d() {
+    fn mul_3d_and_2d() {
         let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
         let b = Tensor::from_f64(vec![-2.0, 3.0, 10.0, 4.0], vec![2, 2]);
         let c = a * b;
@@ -132,7 +132,7 @@ mod tests {
     }
 
     #[test]
-    fn add_elementwise_3d() {
+    fn add_3d_and_3d() {
         let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
         let b = Tensor::arange(8.0, 0.0, -1.0).reshape(&[2, 2, 2]);
         let c = a + b;
@@ -140,7 +140,7 @@ mod tests {
     }
 
     #[test]
-    fn add_3d_by_2d() {
+    fn add_3d_and_2d() {
         let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
         let b = Tensor::from_f64(vec![-2.0, 3.0, 10.0, 4.0], vec![2, 2]);
         let c = a + b;

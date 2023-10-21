@@ -277,6 +277,37 @@ impl Tensor {
         reshaped_t
     }
 
+    /// Inserts a dimension of size 1 at a specified location in shape.
+    pub fn unsqueeze(&self, dim: usize) -> Self {
+        let mut t = self.clone();
+        t.shape.insert(dim, 1);
+        t
+    }
+
+    /// Returns a tensor with all specified dimensions of shape of size 1 removed.
+    ///
+    /// * If `dim` is empty it performs removal across the whole shape.
+    /// * If `dim` contains dimensions, then it only considers them.
+    ///
+    /// All the specified dimensions that are more than 1 it leaves as it is.
+    pub fn squeeze(&self, dim: &[usize]) -> Self {
+        let mut t = self.clone();
+        if dim.is_empty() {
+            for d in (0..t.shape.len()).rev() {
+                if t.shape[d] == 1 {
+                    t.shape.remove(d);
+                }
+            }
+        } else {
+            for d in (0..dim.len()).rev() {
+                if t.shape[d] == 1 {
+                    t.shape.remove(d);
+                }
+            }
+        }
+        t
+    }
+
     /// Exponents each value of the `Tensor`.
     ///
     /// `exp(x)` => `e^(x)`.
@@ -297,7 +328,7 @@ impl Tensor {
     /// Exapnds tesnor along its dimensions.
     ///
     /// Takes new shape.
-    pub fn expand(&self, new_shape: Vec<usize>) -> Self {
+    pub fn expand(&self, new_shape: &[usize]) -> Self {
         assert!(self.shape().len() <= new_shape.len(), "The number of sizes provided ({:?}) must be equal or greater than the number of sizes in the tensor ({:?})", self.shape().len(), new_shape.len());
         let mut _old_shape = self.shape();
         // check if batch dims have to be added in th front
@@ -322,7 +353,7 @@ impl Tensor {
 
         // change tensor properties
         let mut t = self.clone();
-        t.shape = new_shape;
+        t.shape = new_shape.to_vec();
         t
     }
 
@@ -767,7 +798,7 @@ mod tests {
     /// is not accessible outside of this crate
     fn expand() {
         let a = Tensor::ones(vec![1, 1, 3, 1, 3, 3]);
-        let a = a.expand(vec![2, 2, 3, 3, 3, 3]);
+        let a = a.expand(&[2, 2, 3, 3, 3, 3]);
         assert_eq!(a.shape, vec![2, 2, 3, 3, 3, 3]);
         assert_eq!(a.inner.borrow().shape, vec![1, 1, 3, 1, 3, 3]);
     }
