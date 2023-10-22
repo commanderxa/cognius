@@ -1,7 +1,14 @@
 [package]
 name = "cognius"
+# versions
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.73.0"
+# info
+authors = ["commanderxa"]
+readme = "README.md"
+repository = "https://github.com/CommanderXA/cognius"
+license-file = "LICENSE.txt"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

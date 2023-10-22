@@ -102,7 +102,7 @@ impl Backward for Op {
             // d(relu)/dx = { 1 if x > 0 else 0 }
             Op::ReLU => {
                 let t = tensor;
-                let mut prev = t._prev[0].0.borrow_mut();
+                let mut prev = t._prev[0].inner.borrow_mut();
                 let grad = prev.grad.as_mut().unwrap();
                 for (i, g) in grad.iter_mut().enumerate() {
                     *g = if t.data[i] > 0.0 { 1.0 } else { 0.0 }
@@ -121,8 +121,8 @@ impl Backward for Op {
             }
 
             Op::MSE => {
-                let t = tensor._prev[0].0.borrow();
-                let t_sub = t._prev[0].0.borrow();
+                let t = tensor._prev[0].inner.borrow();
+                let t_sub = t._prev[0].inner.borrow();
                 let out = t_sub._prev[0].item();
                 let target = t_sub._prev[1].item();
                 let grad = out

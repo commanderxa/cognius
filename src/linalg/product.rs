@@ -97,52 +97,31 @@ pub fn cross(a: Tensor, b: Tensor) -> Tensor {
         3,
         "Last dimension of Tensor `b` does not equal 3."
     );
+
+    let mut a = a;
+    let mut b = b;
+    // check whether to expand any of variables
+    if a.shape() != b.shape() {
+        // if `a` tensor is bigger => expand `b`
+        // else expand `a`
+        if a.length() > b.length() {
+            b = b.expand(&a.shape);
+        } else {
+            a = a.expand(&b.shape);
+        }
+    }
+
     // get data of the Tensors
     let _a = a.item();
     let _b = b.item();
-    // get batch dimensions
-    let mut a_batch_dims = a.shape();
-    let _ = a_batch_dims.pop();
-    let mut b_batch_dims = b.shape();
-    let _ = b_batch_dims.pop();
-    for i in 0..a_batch_dims.len() {
-        assert!(
-            a_batch_dims[i] == b_batch_dims[i] || b_batch_dims[i] == 1, 
-            "The size of tensor a ({:?}) must match the size of tensor b ({:?}) at a dimension {:?}", 
-            format!("{}", a_batch_dims[i]), 
-            format!("{}", b_batch_dims[i]), 
-            format!("{}", i)
-        );
-    }
-    // batch dimensions to expand
-    let mut batch_expand = vec![0; a_batch_dims.len()];
-    // get batches to expand
-    for i in 0..a_batch_dims.len() {
-        let diff = a_batch_dims[i] - b_batch_dims[i];
-        if diff > 0 {
-            batch_expand[i] = diff;
-        }
-    }
-    println!("{:?}", batch_expand);
-    for i in 0..batch_expand.len() {
-        if batch_expand[i] > 0 {
-            
-        }
-    }
-    // check dimensional correspondence
     // result init
     let mut result = vec![0.0; a.length()];
     let mut i: usize = 0;
-    let mut j: usize = 0;
-    while i < (a.length()-2) {
-        result[i] = (_a[i+1] * _b[j+2]) - (_a[i+2] * _b[j+1]);
-        result[i+1] = (_a[i+2] * _b[j]) - (_a[i] * _b[j+2]);
-        result[i+2] = (_a[i] * _b[j+1]) - (_a[i+1] * _b[j]);
-        i += 2;
-        j += 2;
-        if j >= (b.length()-2) {
-            j = 0;
-        }
+    while i < (a.length() - 2) {
+        result[i] = (_a[i + 1] * _b[i + 2]) - (_a[i + 2] * _b[i + 1]);
+        result[i + 1] = (_a[i + 2] * _b[i]) - (_a[i] * _b[i + 2]);
+        result[i + 2] = (_a[i] * _b[i + 1]) - (_a[i + 1] * _b[i]);
+        i += 3;
     }
     // computation
     // construct a Tensor

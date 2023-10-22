@@ -30,7 +30,7 @@ impl SGD {
 
     pub fn zero_grad(&self) {
         for i in 0..self.parameters.len() {
-            self.parameters[i].0.borrow_mut().zero_grad();
+            self.parameters[i].inner.borrow_mut().zero_grad();
         }
     }
 }
