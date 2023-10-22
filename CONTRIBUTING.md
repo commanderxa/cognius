@@ -48,6 +48,6 @@ For example:
 cargo run --example simple
 ```
 
-## Secutiry
+## Security
 
 If it happened that you've found any security vulnerability, then please, refer to the `SECURITY.md` to share that information.
