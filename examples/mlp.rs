@@ -10,17 +10,17 @@ fn main() {
     let optim = SGD::new(mlp.parameters(), 1.0);
 
     let data = vec![
-        Tensor::from_f64(vec![9.0, 3.0], vec![1, 2]),
-        Tensor::from_f64(vec![2.0, 3.0], vec![1, 2]),
-        Tensor::from_f64(vec![3.0, 7.0], vec![1, 2]),
-        Tensor::from_f64(vec![8.0, 6.0], vec![1, 2]),
-        Tensor::from_f64(vec![4.0, 4.0], vec![1, 2]),
-        Tensor::from_f64(vec![4.0, 1.0], vec![1, 2]),
-        Tensor::from_f64(vec![5.0, 2.0], vec![1, 2]),
-        Tensor::from_f64(vec![2.0, 5.0], vec![1, 2]),
-        Tensor::from_f64(vec![5.0, 6.0], vec![1, 2]),
-        Tensor::from_f64(vec![7.0, 2.0], vec![1, 2]),
-        Tensor::from_f64(vec![9.0, 1.0], vec![1, 2]),
+        Tensor::from_f64(vec![9., 3.0], vec![1, 2]),
+        Tensor::from_f64(vec![2., 3.0], vec![1, 2]),
+        Tensor::from_f64(vec![3., 7.0], vec![1, 2]),
+        Tensor::from_f64(vec![8., 6.0], vec![1, 2]),
+        Tensor::from_f64(vec![4., 4.0], vec![1, 2]),
+        Tensor::from_f64(vec![4., 1.0], vec![1, 2]),
+        Tensor::from_f64(vec![5., 2.0], vec![1, 2]),
+        Tensor::from_f64(vec![2., 5.0], vec![1, 2]),
+        Tensor::from_f64(vec![5., 6.0], vec![1, 2]),
+        Tensor::from_f64(vec![7., 2.0], vec![1, 2]),
+        Tensor::from_f64(vec![9., 1.0], vec![1, 2]),
     ];
     let targets = vec![
         Tensor::from_f64(vec![0.0], vec![1, 1]),
@@ -37,8 +37,8 @@ fn main() {
     ];
 
     let test_data = vec![
-        Tensor::from_f64(vec![6.0, 6.0], vec![1, 2]),
-        Tensor::from_f64(vec![8.0, 2.0], vec![1, 2]),
+        Tensor::from_f64(vec![6., 6.0], vec![1, 2]),
+        Tensor::from_f64(vec![8., 2.0], vec![1, 2]),
     ];
     let test_targets = vec![
         Tensor::from_f64(vec![1.0], vec![1, 1]),
