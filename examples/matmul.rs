@@ -13,8 +13,18 @@ fn main() {
     //     ],
     //     vec![3, 1, 3, 1, 2, 3],
     // );
-    // let c = linalg::cross(a.clone(), b.clone());
+    // let c = cognius::linalg::cross(a.clone(), b.clone());
     // println!("{}", c);
+
+    let a = Tensor::ones(vec![3, 2, 3]);
+    let b = Tensor::from_f64(
+        vec![
+            0.3367, 0.1288, 0.2345, 0.2303, -1.1229, -0.1863, 2.2082, -0.6380, 0.4617,
+        ],
+        vec![3, 1, 3],
+    );
+    let c = cognius::linalg::cross(a.clone(), b.clone());
+    println!("{}", c);
 
     // let a = Tensor::from_f64(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]);
     // let b = a.t();
@@ -27,22 +37,22 @@ fn main() {
     // let c = a * b;
     // println!("{c}");
 
-    let a = Tensor::from_f64(
-        vec![
-            0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13., 14., 15., 16., 17., 18.,
-            19., 20., 21., 22., 23.,
-        ],
-        vec![1, 2, 3, 4],
-    );
-    println!("Data: {:?}\nShape: {:?}\nStride: {:?}", a.item(), a.shape, a.stride);
-    let a = Tensor::arange(0.0, 10.0, 1.0);
-    println!("Data: {:?}\nShape: {:?}\nStride: {:?}", a.item(), a.shape, a.stride);
+    // let a = Tensor::from_f64(
+    //     vec![
+    //         0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13., 14., 15., 16., 17., 18.,
+    //         19., 20., 21., 22., 23.,
+    //     ],
+    //     vec![1, 2, 3, 4],
+    // );
+    // println!("Data: {:?}\nShape: {:?}\nStride: {:?}", a.item(), a.shape, a.stride);
+    // let a = Tensor::arange(0.0, 10.0, 1.0);
+    // println!("Data: {:?}\nShape: {:?}\nStride: {:?}", a.item(), a.shape, a.stride);
     // let a = a.expand(&[2,2,3,4]);
     // println!("Data: {:?}\nShape: {:?}", a.item(), a.shape);
     // println!("{a}");
 
     // let a = a.transpose(1, 2);
-    println!("{a}");
+    // println!("{a}");
 
     // let a = a.t();
     // println!("Data: {:?}\nShape: {:?}", a.item(), a.shape);

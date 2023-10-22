@@ -159,9 +159,9 @@ impl Tensor {
         let mut mask = vec![0; shape.len()];
         let mut data = vec![0.0; self.length()];
         // iterate over storage data
-        for i in 0..self.length() {
+        for d in data.iter_mut() {
             // compute index of past position of data
-            data[i] = storage[stride.iter().zip(&mask).map(|(a, b)| a * b).sum::<usize>()];
+            *d = storage[stride.iter().zip(&mask).map(|(a, b)| a * b).sum::<usize>()];
             // iterate over shape
             for j in (0..shape.len()).rev() {
                 // skip the properly filled dims
@@ -322,10 +322,9 @@ impl Tensor {
         let mut _old_shape = self.shape();
         // check if batch dims have to be added in th front
         let dims_to_add = new_shape.len() - _old_shape.len();
-        let mut old_shape: Vec<usize> = vec![];
+        let mut old_shape: Vec<usize> = vec![1; dims_to_add];
         // push neccessary front batch dims
         for _ in 0..dims_to_add {
-            old_shape.push(1);
             t.stride.insert(0, t.stride[0]);
         }
         // append the rest of the shape
@@ -335,9 +334,9 @@ impl Tensor {
             assert!(
                 old_shape[i] == new_shape[i] || (old_shape[i] == 1),
                 "The expanded size of the tensor ({}) must match the existing size ({}) at dimension ({})", 
-                format!("{}", new_shape[i]), 
-                format!("{}", old_shape[i]), 
-                format!("{}", i)
+                new_shape[i],
+                old_shape[i],
+                i,
             );
             // set expanded dim strides to 0
             if old_shape[i] == 1 && new_shape[i] > 1 {
@@ -360,8 +359,7 @@ impl Tensor {
             }
         }
         width += 5;
-        let result = self._tensor_to_str(tensor_str, level, range, width);
-        result
+        self._tensor_to_str(tensor_str, level, range, width)
     }
 
     fn _tensor_to_str(
@@ -392,7 +390,7 @@ impl Tensor {
                     spaces = width - (s.len() + 5);
                 }
                 for _ in 0..spaces {
-                    result.push_str(&" ");
+                    result.push(' ');
                 }
                 let mut num = format!("{:.4}", item[i]);
                 if i < self.shape()[level] - 1 {
@@ -409,7 +407,7 @@ impl Tensor {
                         spaces = width - (s.len() + 5);
                     }
                     for _ in 0..spaces {
-                        result.push_str(&" ");
+                        result.push(' ');
                     }
                     let mut num = format!("{:.4}", item[i + j]);
                     if j < self.shape()[level + 1] - 1 {
