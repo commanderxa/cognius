@@ -19,15 +19,23 @@ use crate::{backward::Backward, op::Op, tensor_data::TensorData};
 pub struct Tensor {
     pub(crate) inner: Rc<RefCell<TensorData>>,
     pub shape: Vec<usize>,
+    pub stride: Vec<usize>,
 }
 
 impl Tensor {
     /// Creates a new instance of a `Tensor`.
     pub(crate) fn new(inner: TensorData) -> Self {
         let shape = inner.shape.clone();
+        let mut stride = vec![1; shape.len()];
+        // compute stride
+        for i in (0..shape.len() - 1).rev() {
+            stride[i] = shape[i + 1] * stride[i + 1];
+            // set the copied dimension to 0
+        }
         Self {
             inner: Rc::new(RefCell::new(inner)),
-            shape: shape,
+            shape,
+            stride,
         }
     }
 
@@ -126,43 +134,6 @@ impl Tensor {
         self.inner.borrow().data.clone()
     }
 
-    /// Computes the stides of a `Tensor`.
-    ///
-    /// These strides are used to perform certain operations on a `Tensor`,
-    /// allowing to recompute the `Tensor` itself
-    pub fn stride(&self) -> Vec<usize> {
-        let shape = self.shape();
-        let original_shape = self.inner.borrow().shape();
-        let mut stride: Vec<usize> = vec![0; shape.len()];
-        // set last stride dim to 1
-        stride[shape.len() - 1] = 1;
-        // track the last cumulative dimension (from the rear)
-        let mut prev_original = stride[shape.len() - 1];
-        let mut last_idx = shape.len() - 1;
-        for i in (0..(shape.len())).rev() {
-            if original_shape[i] == shape[i] {
-                stride[i] = 1;
-                prev_original = stride[i];
-                last_idx = i;
-                break;
-            } else {
-                stride[i] = 0;
-            }
-        }
-        // compute stride
-        for i in (0..last_idx).rev() {
-            stride[i] = shape[i + 1] * prev_original;
-            // set the copied dimension to 0
-            if original_shape[i] != shape[i] {
-                stride[i] = 0;
-                continue;
-            }
-            // update the last cumulative dimensions
-            prev_original = stride[i];
-        }
-        stride
-    }
-
     /// Fills the given empty tensor with a values with an inputted range. It
     /// also sets the gradients to 0.
     ///
@@ -174,6 +145,10 @@ impl Tensor {
             tensor.data.push(data);
             tensor.grad.as_mut().unwrap().push(0.0);
         }
+    }
+
+    fn stride(&self) -> Vec<usize> {
+        self.stride.clone()
     }
 
     /// Returns the data of the tensor.
@@ -230,6 +205,7 @@ impl Tensor {
         // transpose tensor of 2 and more dimensions
         if t.shape().len() >= 2 {
             t.shape.swap(dim0, dim1);
+            t.stride.swap(dim0, dim1);
         }
         t
     }
@@ -279,8 +255,18 @@ impl Tensor {
 
     /// Inserts a dimension of size 1 at a specified location in shape.
     pub fn unsqueeze(&self, dim: usize) -> Self {
+        assert!(
+            dim <= self.shape.len(),
+            "Dimension out of range (expected range of [0, {}])",
+            self.shape.len()
+        );
         let mut t = self.clone();
         t.shape.insert(dim, 1);
+        let mut replica = 1;
+        if dim < self.shape.len() {
+            replica = t.stride[dim];
+        }
+        t.stride.insert(dim, replica);
         t
     }
 
@@ -296,12 +282,14 @@ impl Tensor {
             for d in (0..t.shape.len()).rev() {
                 if t.shape[d] == 1 {
                     t.shape.remove(d);
+                    t.stride.remove(d);
                 }
             }
         } else {
             for d in (0..dim.len()).rev() {
                 if t.shape[d] == 1 {
                     t.shape.remove(d);
+                    t.stride.remove(d);
                 }
             }
         }
@@ -330,6 +318,7 @@ impl Tensor {
     /// Takes new shape.
     pub fn expand(&self, new_shape: &[usize]) -> Self {
         assert!(self.shape().len() <= new_shape.len(), "The number of sizes provided ({:?}) must be equal or greater than the number of sizes in the tensor ({:?})", self.shape().len(), new_shape.len());
+        let mut t = self.clone();
         let mut _old_shape = self.shape();
         // check if batch dims have to be added in th front
         let dims_to_add = new_shape.len() - _old_shape.len();
@@ -337,22 +326,26 @@ impl Tensor {
         // push neccessary front batch dims
         for _ in 0..dims_to_add {
             old_shape.push(1);
+            t.stride.insert(0, t.stride[0]);
         }
         // append the rest of the shape
         old_shape.append(&mut _old_shape);
         // check if sizes are consistent
         for i in (0..new_shape.len()).rev() {
             assert!(
-                old_shape[i] == new_shape[i] || (new_shape[i] == 1 || old_shape[i] == 1),
+                old_shape[i] == new_shape[i] || (old_shape[i] == 1),
                 "The expanded size of the tensor ({}) must match the existing size ({}) at dimension ({})", 
                 format!("{}", new_shape[i]), 
                 format!("{}", old_shape[i]), 
                 format!("{}", i)
             );
+            // set expanded dim strides to 0
+            if old_shape[i] == 1 && new_shape[i] > 1 {
+                t.stride[i] = 0;
+            }
         }
 
         // change tensor properties
-        let mut t = self.clone();
         t.shape = new_shape.to_vec();
         t
     }

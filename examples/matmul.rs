@@ -34,12 +34,14 @@ fn main() {
         ],
         vec![1, 2, 3, 4],
     );
-    let a = a.expand(&[2,2,3,4]);
+    println!("Data: {:?}\nShape: {:?}\nStride: {:?}", a.item(), a.shape, a.stride);
+    let a = Tensor::arange(0.0, 10.0, 1.0);
+    println!("Data: {:?}\nShape: {:?}\nStride: {:?}", a.item(), a.shape, a.stride);
+    // let a = a.expand(&[2,2,3,4]);
     // println!("Data: {:?}\nShape: {:?}", a.item(), a.shape);
     // println!("{a}");
 
     // let a = a.transpose(1, 2);
-    println!("Data: {:?}\nShape: {:?}", a.item(), a.shape);
     println!("{a}");
 
     // let a = a.t();

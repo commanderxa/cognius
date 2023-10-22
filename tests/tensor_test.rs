@@ -155,22 +155,22 @@ mod tests {
     #[test]
     fn stride() {
         let a = Tensor::ones(vec![1, 1, 3, 1, 3, 3]);
-        assert_eq!(a.stride(), vec![27, 27, 9, 9, 3, 1]);
+        assert_eq!(a.stride, vec![27, 27, 9, 9, 3, 1]);
 
         let a = a.expand(&[2, 2, 3, 3, 3, 3]);
-        assert_eq!(a.stride(), vec![0, 0, 9, 0, 3, 1]);
+        assert_eq!(a.stride, vec![0, 0, 9, 0, 3, 1]);
 
         let a = Tensor::ones(vec![4, 1]);
-        assert_eq!(a.stride(), vec![1, 1]);
+        assert_eq!(a.stride, vec![1, 1]);
 
         let a = a.expand(&[4, 5]);
-        assert_eq!(a.stride(), vec![1, 0]);
+        assert_eq!(a.stride, vec![1, 0]);
 
         let a = Tensor::ones(vec![4, 1, 1]);
-        assert_eq!(a.stride(), vec![1, 1, 1]);
+        assert_eq!(a.stride, vec![1, 1, 1]);
 
         let a = a.expand(&[4, 3, 5]);
-        assert_eq!(a.stride(), vec![1, 0, 0]);
+        assert_eq!(a.stride, vec![1, 0, 0]);
     }
 
     #[test]
@@ -183,8 +183,11 @@ mod tests {
     #[test]
     fn expand() {
         let a = Tensor::ones(vec![1, 1, 3, 1, 3, 3]);
-        let a = a.expand(&[2, 2, 3, 3, 3, 3]);
-        assert_eq!(a.shape, vec![2, 2, 3, 3, 3, 3]);
+        let b = a.expand(&[2, 2, 3, 3, 3, 3]);
+        assert_eq!(a.shape, vec![1, 1, 3, 1, 3, 3]);
+        assert_eq!(b.shape, vec![2, 2, 3, 3, 3, 3]);
+        assert_eq!(a.stride, vec![27, 27, 9, 9, 3, 1]);
+        assert_eq!(b.stride, vec![0, 0, 9, 0, 3, 1]);
     }
 
     #[test]
@@ -192,11 +195,14 @@ mod tests {
         let a = randn!(2, 3, 4);
         let b = a.unsqueeze(1);
         assert_eq!(a.shape, vec![2, 3, 4]);
+        assert_eq!(b.stride, vec![12, 4, 4, 1]);
         assert_eq!(b.shape, vec![2, 1, 3, 4]);
         let c = b.unsqueeze(4);
         assert_eq!(a.shape, vec![2, 3, 4]);
         assert_eq!(b.shape, vec![2, 1, 3, 4]);
         assert_eq!(c.shape, vec![2, 1, 3, 4, 1]);
+        let d = a.unsqueeze(0);
+        assert_eq!(d.shape, vec![1, 2, 3, 4]);
     }
 
     #[test]
