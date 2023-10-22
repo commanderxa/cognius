@@ -16,22 +16,22 @@ fn main() {
     // let c = cognius::linalg::cross(a.clone(), b.clone());
     // println!("{}", c);
 
-    let a = Tensor::ones(vec![3, 2, 3]);
-    let b = Tensor::from_f64(
-        vec![
-            0.3367, 0.1288, 0.2345, 0.2303, -1.1229, -0.1863, 2.2082, -0.6380, 0.4617,
-        ],
-        vec![3, 1, 3],
-    );
-    let c = cognius::linalg::cross(a.clone(), b.clone());
-    println!("{}", c);
+    // let a = Tensor::ones(vec![3, 2, 3]);
+    // let b = Tensor::from_f64(
+    //     vec![
+    //         0.3367, 0.1288, 0.2345, 0.2303, -1.1229, -0.1863, 2.2082, -0.6380, 0.4617,
+    //     ],
+    //     vec![3, 1, 3],
+    // );
+    // let c = cognius::linalg::cross(a.clone(), b.clone());
+    // println!("{}", c);
 
-    // let a = Tensor::from_f64(vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0], vec![2, 3]);
+    // let a = Tensor::from_f64(vec![1., 2., 3., 4., 5., 6.0], vec![2, 3]);
     // let b = a.t();
     // println!("{:?}", a.stride());
     // println!("{:?}", b.stride());
 
-    // let a = Tensor::arange(1.0, 9.0, 1.0);
+    // let a = Tensor::arange(1., 9., 1.0);
     // let a = a.reshape(&[2, 2, 2]);
     // let b = 5;
     // let c = a * b;
@@ -45,7 +45,7 @@ fn main() {
     //     vec![1, 2, 3, 4],
     // );
     // println!("Data: {:?}\nShape: {:?}\nStride: {:?}", a.item(), a.shape, a.stride);
-    // let a = Tensor::arange(0.0, 10.0, 1.0);
+    // let a = Tensor::arange(0., 10., 1.0);
     // println!("Data: {:?}\nShape: {:?}\nStride: {:?}", a.item(), a.shape, a.stride);
     // let a = a.expand(&[2,2,3,4]);
     // println!("Data: {:?}\nShape: {:?}", a.item(), a.shape);
@@ -56,4 +56,39 @@ fn main() {
 
     // let a = a.t();
     // println!("Data: {:?}\nShape: {:?}", a.item(), a.shape);
+
+    let a = Tensor::arange(0., 9., 1.).view(&[3, 1, 3]);
+    println!("{:?}", a.stride);
+    println!("{:?}", a.shape);
+    let a = a.expand(&[3, 2, 3]);
+    println!("{:?}", a.stride);
+    println!("{:?}", a.shape);
+    let a = a
+        .reshape(&[2, 3, 3])
+        .unsqueeze(0)
+        .expand(&[2, 2, 3, 3])
+        .unsqueeze(0)
+        .expand(&[2, 2, 2, 3, 3]);
+    println!("{:?}", a.stride);
+    println!("{:?}", a.shape);
+    println!("{:?}", a.storage());
+    println!("{a}");
+
+    let a = Tensor::arange(1., 9., 1.).reshape(&[2, 2, 2]);
+    let b = Tensor::from_f64(vec![-2., 3., 10., 4.], vec![2, 2]);
+    let c = a / b;
+    println!(
+        "{:?}",
+        c.storage()
+            .iter()
+            .map(|x| (x * 10000.).round() / 10000.)
+            .collect::<Vec<f64>>()
+    );
+    assert_eq!(
+        c.storage()
+            .iter()
+            .map(|x| (x * 10000.).round() / 10000.)
+            .collect::<Vec<f64>>(),
+        vec![-0.5, 0.6667, 0.3, 1.0, -2.5, 2.0, 0.7, 2.0]
+    );
 }

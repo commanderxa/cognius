@@ -27,16 +27,13 @@ mod tests {
     fn matmul_batched() {
         let a = Tensor::from_f64(
             vec![
-                1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0,
-                16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0, 25.0, 26.0, 27.0, 28.0, 29.0,
-                30.0, 31.0, 32.0, 33.0, 34.0, 35.0, 36.0, 37.0, 38.0, 39.0, 40.0,
+                1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13., 14., 15., 16., 17., 18.,
+                19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30., 31., 32., 33., 34.,
+                35., 36., 37., 38., 39., 40.,
             ],
             vec![2, 4, 5],
         );
-        let b = Tensor::from_f64(
-            vec![9.0, 5.0, 3.0, 2.0, 6.0, 9.0, 5.0, 3.0, 2.0, 6.0],
-            vec![5, 2],
-        );
+        let b = Tensor::from_f64(vec![9., 5., 3., 2., 6., 9., 5., 3., 2., 6.0], vec![5, 2]);
         let right = Tensor::from_f64(
             vec![
                 63.0000, 78.0000, 188.0000, 203.0000, 313.0000, 328.0000, 438.0000, 453.0000,
@@ -106,94 +103,170 @@ mod tests {
 
     #[test]
     fn mul_scalar_2d() {
-        let a = Tensor::arange(1.0, 11.0, 1.0);
+        let a = Tensor::arange(1., 11., 1.0);
         let a = a.reshape(&[2, 5]);
         let b = 5;
         let c = a * b;
         assert_eq!(
             c.storage(),
-            vec![
-                5.0 * 1.0,
-                5.0 * 2.0,
-                5.0 * 3.0,
-                5.0 * 4.0,
-                5.0 * 5.0,
-                5.0 * 6.0,
-                5.0 * 7.0,
-                5.0 * 8.0,
-                5.0 * 9.0,
-                5.0 * 10.0,
-            ]
-        )
+            vec![5., 10., 15., 20., 25., 30., 35., 40., 45., 50.,]
+        );
     }
 
     #[test]
     fn mul_scalar_3d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0);
-        let a = a.reshape(&[2, 2, 2]);
+        let a = Tensor::arange(1., 13., 1.0);
+        let a = a.reshape(&[2, 2, 3]);
         let b = 5;
         let c = a * b;
         assert_eq!(
             c.storage(),
-            vec![
-                5.0 * 1.0,
-                5.0 * 2.0,
-                5.0 * 3.0,
-                5.0 * 4.0,
-                5.0 * 5.0,
-                5.0 * 6.0,
-                5.0 * 7.0,
-                5.0 * 8.0,
-            ]
-        )
+            vec![5., 10., 15., 20., 25., 30., 35., 40., 45., 50., 55., 60.]
+        );
     }
 
     #[test]
     fn mul_3d_and_1d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2.0, 2.0], vec![2]);
+        let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
+        let b = Tensor::from_f64(vec![-2., 2.0], vec![2]);
         let c = a * b;
-        assert_eq!(
-            c.storage(),
-            vec![-2.0, 4.0, -6.0, 8.0, -10.0, 12.0, -14.0, 16.0]
-        );
+        assert_eq!(c.storage(), vec![-2., 4., -6., 8., -10., 12., -14., 16.0]);
     }
 
     #[test]
     fn mul_3d_and_2d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2.0, 3.0, 10.0, 4.0], vec![2, 2]);
+        let a = Tensor::arange(1., 9., 1.).reshape(&[2, 2, 2]);
+        let b = Tensor::from_f64(vec![-2., 3., 1., 4.], vec![2, 2]);
         let c = a * b;
+        assert_eq!(c.storage(), vec![-2., 6., 3., 16., -10., 18., 7., 32.]);
+    }
+
+    #[test]
+    fn mul_1d_and_1d() {
+        let a = Tensor::from_f64(vec![10., 20., 30., 40., 50., 60.], vec![6]);
+        let b = Tensor::arange(1., 7., 1.);
+        let c = a * b;
+        assert_eq!(c.storage(), vec![10., 40., 90., 160., 250., 360.]);
+    }
+
+    #[test]
+    fn div_scalar_2d() {
+        let a = Tensor::arange(1., 61., 10.);
+        let a = a.reshape(&[2, 3]);
+        let b = 5;
+        let c = a / b;
+        assert_eq!(c.storage(), vec![0.2, 2.2, 4.2, 6.2, 8.2, 10.2]);
+    }
+
+    #[test]
+    fn div_scalar_3d() {
+        let a = Tensor::arange(1., 13., 1.);
+        let a = a.reshape(&[2, 2, 3]);
+        let b = 5;
+        let c = a / b;
         assert_eq!(
             c.storage(),
-            vec![-2.0, 6.0, 30.0, 16.0, -10.0, 18.0, 70.0, 32.0]
+            vec![0.2, 0.4, 0.6, 0.8, 1., 1.2, 1.4, 1.6, 1.8, 2., 2.2, 2.4]
         );
+    }
+
+    #[test]
+    fn div_3d_and_1d() {
+        let a = Tensor::arange(1., 9., 1.).reshape(&[2, 2, 2]);
+        let b = Tensor::from_f64(vec![-2., 2.], vec![2]);
+        let c = a / b;
+        assert_eq!(
+            c.storage(),
+            vec![-0.5, 1.0, -1.5, 2.0, -2.5, 3.0, -3.5, 4.0]
+        );
+    }
+
+    #[test]
+    fn div_3d_and_2d() {
+        let a = Tensor::arange(1., 9., 1.).reshape(&[2, 2, 2]);
+        let b = Tensor::from_f64(vec![-2., 3., 10., 4.], vec![2, 2]);
+        let c = a / b;
+        assert_eq!(
+            c.storage()
+                .iter()
+                .map(|x| (x * 10000.).round() / 10000.)
+                .collect::<Vec<f64>>(),
+            vec![-0.5, 0.6667, 0.3, 1.0, -2.5, 2.0, 0.7, 2.0]
+        );
+    }
+
+    #[test]
+    fn div_1d_and_1d() {
+        let a = Tensor::from_f64(vec![10., 20., 30., 40., 50., 60.], vec![6]);
+        let b = Tensor::arange(1., 7., 1.);
+        let c = a / b;
+        assert_eq!(c.storage(), vec![10., 10., 10., 10., 10., 10.]);
     }
 
     #[test]
     fn add_scalar_3d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
+        let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
         let b = 2.0;
         let c = a + b;
-        assert_eq!(c.storage(), vec![3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]);
+        assert_eq!(c.storage(), vec![3., 4., 5., 6., 7., 8., 9., 10.0]);
+    }
+
+    #[test]
+    fn add_1d_and_1d() {
+        let a = Tensor::arange(0., 11., 1.);
+        let b = Tensor::arange(0., 11., 1.);
+        let c = a + b;
+        assert_eq!(
+            c.storage(),
+            vec![0., 2., 4., 6., 8., 10., 12., 14., 16., 18., 20.]
+        );
     }
 
     #[test]
     fn add_3d_and_3d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
-        let b = Tensor::arange(8.0, 0.0, -1.0).reshape(&[2, 2, 2]);
+        let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
+        let b = Tensor::arange(8., 0., -1.0).reshape(&[2, 2, 2]);
         let c = a + b;
-        assert_eq!(c.storage(), vec![9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0, 9.0]);
+        assert_eq!(c.storage(), vec![9., 9., 9., 9., 9., 9., 9., 9.]);
     }
 
     #[test]
     fn add_3d_and_2d() {
-        let a = Tensor::arange(1.0, 9.0, 1.0).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2.0, 3.0, 10.0, 4.0], vec![2, 2]);
+        let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
+        let b = Tensor::from_f64(vec![-2., 3., 10., 4.0], vec![2, 2]);
         let c = a + b;
-        assert_eq!(
-            c.storage(),
-            vec![-1.0, 5.0, 13.0, 8.0, 3.0, 9.0, 17.0, 12.0]
-        );
+        assert_eq!(c.storage(), vec![-1., 5., 13., 8., 3., 9., 17., 12.]);
+    }
+
+    #[test]
+    fn sub_scalar_3d() {
+        let a = Tensor::arange(1., 9., 1.).reshape(&[2, 2, 2]);
+        let b = 2.;
+        let c = a - b;
+        assert_eq!(c.storage(), vec![-1., 0., 1., 2., 3., 4., 5., 6.]);
+    }
+
+    #[test]
+    fn sub_3d_and_3d() {
+        let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
+        let b = Tensor::arange(8., 0., -1.0).reshape(&[2, 2, 2]);
+        let c = a - b;
+        assert_eq!(c.storage(), vec![-7., -5., -3., -1., 1., 3., 5., 7.]);
+    }
+
+    #[test]
+    fn sub_3d_and_2d() {
+        let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
+        let b = Tensor::from_f64(vec![-2., 3., 10., 4.0], vec![2, 2]);
+        let c = a - b;
+        assert_eq!(c.storage(), vec![3., -1., -7., 0., 7., 3., -3., 4.]);
+    }
+
+    #[test]
+    fn sub_1d_and_1d() {
+        let a = Tensor::from_f64(vec![10., 20., 30., 40., 50., 60.], vec![6]);
+        let b = Tensor::arange(1., 7., 1.);
+        let c = a - b;
+        assert_eq!(c.storage(), vec![9., 18., 27., 36., 45., 54.]);
     }
 }
