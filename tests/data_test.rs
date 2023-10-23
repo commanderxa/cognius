@@ -14,28 +14,28 @@ mod tests {
             Self {
                 data: vec![
                     (
-                        Tensor::from_f64(vec![0.0], vec![1]),
-                        Tensor::from_f64(vec![0.0], vec![1]),
+                        Tensor::from_f64(&[0.0], &[1]),
+                        Tensor::from_f64(&[0.0], &[1]),
                     ),
                     (
-                        Tensor::from_f64(vec![1.0], vec![1]),
-                        Tensor::from_f64(vec![2.0], vec![1]),
+                        Tensor::from_f64(&[1.0], &[1]),
+                        Tensor::from_f64(&[2.0], &[1]),
                     ),
                     (
-                        Tensor::from_f64(vec![2.0], vec![1]),
-                        Tensor::from_f64(vec![4.0], vec![1]),
+                        Tensor::from_f64(&[2.0], &[1]),
+                        Tensor::from_f64(&[4.0], &[1]),
                     ),
                     (
-                        Tensor::from_f64(vec![3.0], vec![1]),
-                        Tensor::from_f64(vec![6.0], vec![1]),
+                        Tensor::from_f64(&[3.0], &[1]),
+                        Tensor::from_f64(&[6.0], &[1]),
                     ),
                     (
-                        Tensor::from_f64(vec![4.0], vec![1]),
-                        Tensor::from_f64(vec![8.0], vec![1]),
+                        Tensor::from_f64(&[4.0], &[1]),
+                        Tensor::from_f64(&[8.0], &[1]),
                     ),
                     (
-                        Tensor::from_f64(vec![5.0], vec![1]),
-                        Tensor::from_f64(vec![10.0], vec![1]),
+                        Tensor::from_f64(&[5.0], &[1]),
+                        Tensor::from_f64(&[10.0], &[1]),
                     ),
                 ],
             }

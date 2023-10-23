@@ -24,8 +24,7 @@ pub struct Tensor {
 
 impl Tensor {
     /// Creates a new instance of a `Tensor`.
-    pub(crate) fn new(inner: TensorData) -> Self {
-        let shape = inner.shape.clone();
+    pub(crate) fn new(inner: TensorData, shape: &[usize]) -> Self {
         let mut stride = vec![1; shape.len()];
         // compute stride
         for i in (0..shape.len() - 1).rev() {
@@ -33,55 +32,55 @@ impl Tensor {
         }
         Self {
             inner: Rc::new(RefCell::new(inner)),
-            shape,
+            shape: shape.to_vec(),
             stride,
         }
     }
 
     /// Creates a new tensor with the random values between 0 and 1
-    pub fn randn(shape: Vec<usize>) -> Self {
-        let mut inner = TensorData::from_f64(vec![], shape);
+    pub fn randn(shape: &[usize]) -> Self {
+        let mut inner = TensorData::from_f64(vec![0.0; shape.iter().product()]);
         Self::fill_tensor(&mut inner, 0.0..1.0);
-        Self::new(inner)
+        Self::new(inner, shape)
     }
 
     /// Creates a new tensor, where all the values are 0.
-    pub fn zeros(shape: Vec<usize>) -> Self {
+    pub fn zeros(shape: &[usize]) -> Self {
         let mut inner = TensorData::new(shape);
         inner.data.fill(0.0);
-        Self::new(inner)
+        Self::new(inner, shape)
     }
 
     /// Creates a new tensor like the inputted one, where all the values are 0.
     pub fn zeros_like(tensor: Tensor) -> Self {
-        let mut inner = TensorData::new(tensor.shape());
+        let mut inner = TensorData::new(tensor.shape.as_slice());
         inner.data.fill(0.0);
-        Self::new(inner)
+        Self::new(inner, tensor.shape.as_slice())
     }
 
     /// Creates a new tensor, where all the values are 1.
-    pub fn ones(shape: Vec<usize>) -> Self {
+    pub fn ones(shape: &[usize]) -> Self {
         let mut inner = TensorData::new(shape);
         inner.data.fill(1.0);
-        Self::new(inner)
+        Self::new(inner, shape)
     }
 
     /// Creates a new tensor like the inputted one, where all the values are 1.
     pub fn ones_like(tensor: Tensor) -> Self {
-        let mut inner = TensorData::new(tensor.shape());
+        let mut inner = TensorData::new(tensor.shape.as_slice());
         inner.data.fill(1.0);
-        Self::new(inner)
+        Self::new(inner, tensor.shape.as_slice())
     }
 
     /// Create a new tensor from the given data and the shape.
-    pub fn from_f64(data: Vec<f64>, shape: Vec<usize>) -> Self {
+    pub fn from_f64(data: &[f64], shape: &[usize]) -> Self {
         assert_eq!(
             data.len(),
             shape.iter().product(),
             "The length of the tensor does not match the shape"
         );
-        let inner = TensorData::from_f64(data, shape);
-        Self::new(inner)
+        let inner = TensorData::from_f64(data.to_vec());
+        Self::new(inner, shape)
     }
 
     /// Generates a tesnor within a given range with a step.
@@ -110,8 +109,8 @@ impl Tensor {
         for i in 0..len as usize {
             data.push(start + (step * i as f64));
         }
-        let inner = TensorData::from_f64(data, vec![len as usize]);
-        Self::new(inner)
+        let inner = TensorData::from_f64(data);
+        Self::new(inner, &[len as usize])
     }
 
     /// Returns the shape of the tensor as vector.
@@ -139,9 +138,9 @@ impl Tensor {
     /// E.g. if the range is (-1.0..1.0) then each value in the tensor will be
     /// between -1 and 1.
     fn fill_tensor(tensor: &mut TensorData, range: Range<f64>) {
-        for _ in 0..tensor.shape.iter().product() {
+        for i in 0..tensor.data.len() {
             let data = rand::thread_rng().gen_range(range.clone());
-            tensor.data.push(data);
+            tensor.data[i] = data;
             tensor.grad.as_mut().unwrap().push(0.0);
         }
     }
@@ -349,13 +348,8 @@ impl Tensor {
         for item in data.iter_mut() {
             *item = E.powf(*item);
         }
-        let inner = TensorData::from_op(
-            data,
-            self.shape(),
-            vec![self.clone()],
-            Op::Exp(self.clone()),
-        );
-        Tensor::new(inner)
+        let inner = TensorData::from_op(data, vec![self.clone()], Op::Exp(self.clone()));
+        Tensor::new(inner, &self.shape)
     }
 
     /// Exapnds tesnor along its dimensions.
@@ -424,8 +418,9 @@ impl Tensor {
     /// For backpropagation it stores the `n` inside the `Op::Pow(n)`.
     pub fn pow(self, n: i32) -> Tensor {
         let data = self.item().iter().map(|a| a.powi(n)).collect::<Vec<f64>>();
-        let inner = TensorData::from_op(data, self.shape(), vec![self], Op::Pow(n));
-        Self::new(inner)
+        let shape = self.shape();
+        let inner = TensorData::from_op(data, vec![self], Op::Pow(n));
+        Self::new(inner, &shape)
     }
 
     /// Backward
@@ -473,7 +468,7 @@ impl Tensor {
         let mut a = a;
         let mut b = b;
         // check whether to expand any of variables
-        if a.shape() != b.shape() {
+        if a.shape != b.shape {
             // if `a` tensor is bigger => expand `b`
             // else expand `a`
             if a.length() > b.length() {
@@ -518,8 +513,9 @@ impl Tensor {
                 break;
             }
         }
-        let inner = TensorData::from_op(data, a.shape(), vec![a, b], op);
-        Self::new(inner)
+        let shape = a.shape();
+        let inner = TensorData::from_op(data, vec![a, b], op);
+        Self::new(inner, &shape)
     }
 
     /// Converts the tensor to a `String`, so that it can be printed.
@@ -769,7 +765,7 @@ macro_rules! randn {
         // fill the shape
         $(shape.push($element);)*;
         // pass the shape to the `randn` method
-        Tensor::randn(shape)
+        Tensor::randn(&shape)
     }};
     ($($element:expr,)*) => {{
         $crate::tensor::randn![$($element),*]
@@ -783,20 +779,4 @@ macro_rules! count_shape {
         <[()]>::len(&[$($crate::count_shape![@SUBST; $element]),*])
     };
     (@SUBST; $_element:expr) => { () };
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    /// Tests the original shape after expansion.
-    /// It cannot be tested outside of this module as `Tensor`'s field `inner`
-    /// is not accessible outside of this crate
-    fn expand() {
-        let a = Tensor::ones(vec![1, 1, 3, 1, 3, 3]);
-        let a = a.expand(&[2, 2, 3, 3, 3, 3]);
-        assert_eq!(a.shape, vec![2, 2, 3, 3, 3, 3]);
-        assert_eq!(a.inner.borrow().shape, vec![1, 1, 3, 1, 3, 3]);
-    }
 }

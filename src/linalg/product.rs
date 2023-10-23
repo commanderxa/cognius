@@ -65,12 +65,12 @@ pub fn matmul(a: Tensor, b: Tensor) -> Tensor {
         }
     }
     // add batch dimensions to the new shape
-    let new_shape = batches
+    let new_shape: Vec<usize> = batches
         .into_iter()
         .chain(vec![a_shape[0], b_shape[b_shape.len() - 1]])
         .collect();
-    let inner = TensorData::from_op(result, new_shape, vec![a, b], Op::MatMul);
-    Tensor::new(inner)
+    let inner = TensorData::from_op(result, vec![a, b], Op::MatMul);
+    Tensor::new(inner, &new_shape)
 }
 
 /// Cross Product
@@ -101,7 +101,7 @@ pub fn cross(a: Tensor, b: Tensor) -> Tensor {
     let mut a = a;
     let mut b = b;
     // check whether to expand any of variables
-    if a.shape() != b.shape() {
+    if a.shape != b.shape {
         // if `a` tensor is bigger => expand `b`
         // else expand `a`
         if a.length() > b.length() {
@@ -123,8 +123,9 @@ pub fn cross(a: Tensor, b: Tensor) -> Tensor {
         result[i + 2] = (_a[i] * _b[i + 1]) - (_a[i + 1] * _b[i]);
         i += 3;
     }
+    let shape = a.shape();
     // computation
     // construct a Tensor
-    let inner = TensorData::from_op(result, a.shape(), vec![a, b], Op::Cross);
-    Tensor::new(inner)
+    let inner = TensorData::from_op(result, vec![a, b], Op::Cross);
+    Tensor::new(inner, &shape)
 }

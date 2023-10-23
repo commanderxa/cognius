@@ -5,9 +5,9 @@ mod tests {
     #[test]
     /// Matrix multiplication
     fn matmul_2d() {
-        let a = Tensor::from_f64(vec![0., 1., 2., 3., 4., 5.], vec![2, 3]);
-        let b: Tensor = Tensor::from_f64(vec![6., 7., 8., 9., 10., 11.], vec![3, 2]);
-        let c = Tensor::from_f64(vec![28., 31., 100., 112.], vec![2, 2]);
+        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
+        let b: Tensor = Tensor::from_f64(&[6., 7., 8., 9., 10., 11.], &[3, 2]);
+        let c = Tensor::from_f64(&[28., 31., 100., 112.], &[2, 2]);
         let mm = linalg::matmul(a, b);
         assert_eq!(mm.item(), c.item());
         assert_eq!(mm.shape, c.shape);
@@ -17,8 +17,8 @@ mod tests {
     #[should_panic]
     /// Matrix multiplication
     fn matmul_2d_panic() {
-        let a: Tensor = Tensor::from_f64(vec![6., 7., 8., 9., 10., 11.], vec![3, 2]);
-        let b = Tensor::from_f64(vec![28., 31., 100., 112.], vec![2, 2]);
+        let a: Tensor = Tensor::from_f64(&[6., 7., 8., 9., 10., 11.], &[3, 2]);
+        let b = Tensor::from_f64(&[28., 31., 100., 112.], &[2, 2]);
         linalg::matmul(b, a);
     }
 
@@ -26,20 +26,20 @@ mod tests {
     /// Batched matrix multiplication
     fn matmul_batched() {
         let a = Tensor::from_f64(
-            vec![
+            &[
                 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11., 12., 13., 14., 15., 16., 17., 18.,
                 19., 20., 21., 22., 23., 24., 25., 26., 27., 28., 29., 30., 31., 32., 33., 34.,
                 35., 36., 37., 38., 39., 40.,
             ],
-            vec![2, 4, 5],
+            &[2, 4, 5],
         );
-        let b = Tensor::from_f64(vec![9., 5., 3., 2., 6., 9., 5., 3., 2., 6.0], vec![5, 2]);
+        let b = Tensor::from_f64(&[9., 5., 3., 2., 6., 9., 5., 3., 2., 6.0], &[5, 2]);
         let right = Tensor::from_f64(
-            vec![
+            &[
                 63.0000, 78.0000, 188.0000, 203.0000, 313.0000, 328.0000, 438.0000, 453.0000,
                 563.0000, 578.0000, 688.0000, 703.0000, 813.0000, 828.0000, 938.0000, 953.0000,
             ],
-            vec![2, 4, 2],
+            &[2, 4, 2],
         );
         let c = linalg::matmul(a.clone(), b.clone());
         assert_eq!(c.item(), right.item());
@@ -48,17 +48,17 @@ mod tests {
 
     #[test]
     fn cross_1d() {
-        let a = Tensor::from_f64(vec![0.6, -20.5, 5.8], vec![3]);
-        let b = Tensor::from_f64(vec![10.2, -4.6, -34.], vec![3]);
+        let a = Tensor::from_f64(&[0.6, -20.5, 5.8], &[3]);
+        let b = Tensor::from_f64(&[10.2, -4.6, -34.], &[3]);
         let c = linalg::cross(a.clone(), b.clone());
         assert_eq!(vec![723.6800, 79.5600, 206.3400], c.item());
     }
 
     #[test]
     fn cross_multidim() {
-        let a = Tensor::ones(vec![3, 2, 3, 2, 2, 3]);
+        let a = Tensor::ones(&[3, 2, 3, 2, 2, 3]);
         let b = Tensor::from_f64(
-            vec![
+            &[
                 1.9269, 1.4873, 0.9007, -2.1055, 0.6784, -1.2345, -0.0431, -1.6047, -0.7521,
                 1.6487, -0.3925, -1.4036, -0.7279, -0.5594, -0.7688, 0.7624, 1.6423, -0.1596,
                 -0.4974, 0.4396, -0.7581, 1.0783, 0.8008, 1.6806, 1.2791, 1.2964, 0.6105, 1.3347,
@@ -66,7 +66,7 @@ mod tests {
                 -0.4245, -0.8140, -0.7360, -0.8371, -0.9224, 1.8113, 0.1606, 0.3672, 0.1754,
                 -1.1845, 1.3835, -1.2024, 0.7078, -1.0759, 0.5357, 1.1754, 0.5612,
             ],
-            vec![3, 1, 3, 1, 2, 3],
+            &[3, 1, 3, 1, 2, 3],
         );
         let c = cognius::linalg::cross(a.clone(), b.clone());
         let correct = vec![
@@ -128,7 +128,7 @@ mod tests {
     #[test]
     fn mul_3d_and_1d() {
         let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2., 2.0], vec![2]);
+        let b = Tensor::from_f64(&[-2., 2.0], &[2]);
         let c = a * b;
         assert_eq!(c.storage(), vec![-2., 4., -6., 8., -10., 12., -14., 16.0]);
     }
@@ -136,14 +136,14 @@ mod tests {
     #[test]
     fn mul_3d_and_2d() {
         let a = Tensor::arange(1., 9., 1.).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2., 3., 1., 4.], vec![2, 2]);
+        let b = Tensor::from_f64(&[-2., 3., 1., 4.], &[2, 2]);
         let c = a * b;
         assert_eq!(c.storage(), vec![-2., 6., 3., 16., -10., 18., 7., 32.]);
     }
 
     #[test]
     fn mul_1d_and_1d() {
-        let a = Tensor::from_f64(vec![10., 20., 30., 40., 50., 60.], vec![6]);
+        let a = Tensor::from_f64(&[10., 20., 30., 40., 50., 60.], &[6]);
         let b = Tensor::arange(1., 7., 1.);
         let c = a * b;
         assert_eq!(c.storage(), vec![10., 40., 90., 160., 250., 360.]);
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn div_3d_and_1d() {
         let a = Tensor::arange(1., 9., 1.).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2., 2.], vec![2]);
+        let b = Tensor::from_f64(&[-2., 2.], &[2]);
         let c = a / b;
         assert_eq!(
             c.storage(),
@@ -184,7 +184,7 @@ mod tests {
     #[test]
     fn div_3d_and_2d() {
         let a = Tensor::arange(1., 9., 1.).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2., 3., 10., 4.], vec![2, 2]);
+        let b = Tensor::from_f64(&[-2., 3., 10., 4.], &[2, 2]);
         let c = a / b;
         assert_eq!(
             c.storage()
@@ -197,7 +197,7 @@ mod tests {
 
     #[test]
     fn div_1d_and_1d() {
-        let a = Tensor::from_f64(vec![10., 20., 30., 40., 50., 60.], vec![6]);
+        let a = Tensor::from_f64(&[10., 20., 30., 40., 50., 60.], &[6]);
         let b = Tensor::arange(1., 7., 1.);
         let c = a / b;
         assert_eq!(c.storage(), vec![10., 10., 10., 10., 10., 10.]);
@@ -233,7 +233,7 @@ mod tests {
     #[test]
     fn add_3d_and_2d() {
         let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2., 3., 10., 4.0], vec![2, 2]);
+        let b = Tensor::from_f64(&[-2., 3., 10., 4.0], &[2, 2]);
         let c = a + b;
         assert_eq!(c.storage(), vec![-1., 5., 13., 8., 3., 9., 17., 12.]);
     }
@@ -257,14 +257,14 @@ mod tests {
     #[test]
     fn sub_3d_and_2d() {
         let a = Tensor::arange(1., 9., 1.0).reshape(&[2, 2, 2]);
-        let b = Tensor::from_f64(vec![-2., 3., 10., 4.0], vec![2, 2]);
+        let b = Tensor::from_f64(&[-2., 3., 10., 4.0], &[2, 2]);
         let c = a - b;
         assert_eq!(c.storage(), vec![3., -1., -7., 0., 7., 3., -3., 4.]);
     }
 
     #[test]
     fn sub_1d_and_1d() {
-        let a = Tensor::from_f64(vec![10., 20., 30., 40., 50., 60.], vec![6]);
+        let a = Tensor::from_f64(&[10., 20., 30., 40., 50., 60.], &[6]);
         let b = Tensor::arange(1., 7., 1.);
         let c = a - b;
         assert_eq!(c.storage(), vec![9., 18., 27., 36., 45., 54.]);

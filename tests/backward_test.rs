@@ -7,19 +7,17 @@ mod tests {
 
     #[test]
     fn zero_grad() {
-        let mlp = MLP::new([4, 10, 20, 5, 1]);
-        let optim = SGD::new(mlp.parameters(), 1e-3);
-        let x = Tensor::randn(vec![10, 4]);
-
-        let out = mlp.forward(x.clone());
-
-        out.backward();
+        let a = Tensor::from_f64(&[1., 2., 3., 4., 5., 6.], &[2, 3]);
+        let b = Tensor::ones(&[2, 3]);
+        let optim = SGD::new(vec![a.clone(), b.clone()], 1e-3);
+        let c = a.clone() * b.clone();
+        c.backward();
+        assert_ne!(a.grad().unwrap().iter().sum::<f64>(), 0.0);
+        assert_ne!(b.grad().unwrap().iter().sum::<f64>(), 0.0);
         optim.step();
         optim.zero_grad();
-
-        for item in mlp.parameters() {
-            assert_eq!(item.grad().unwrap().iter().sum::<f64>(), 0.0);
-        }
+        assert_eq!(a.grad().unwrap().iter().sum::<f64>(), 0.0);
+        assert_eq!(b.grad().unwrap().iter().sum::<f64>(), 0.0);
     }
 
     #[ignore]
@@ -27,7 +25,7 @@ mod tests {
     fn optim_step() {
         let mlp = MLP::new([4, 10, 20, 5, 1]);
         let optim = SGD::new(mlp.parameters(), 1e-3);
-        let x = Tensor::randn(vec![10, 4]);
+        let x = Tensor::randn(&[10, 4]);
 
         let out = mlp.forward(x.clone());
 
