@@ -10,39 +10,39 @@ fn main() {
     let optim = SGD::new(mlp.parameters(), 1.0);
 
     let data = vec![
-        Tensor::from_f64(vec![9., 3.0], vec![1, 2]),
-        Tensor::from_f64(vec![2., 3.0], vec![1, 2]),
-        Tensor::from_f64(vec![3., 7.0], vec![1, 2]),
-        Tensor::from_f64(vec![8., 6.0], vec![1, 2]),
-        Tensor::from_f64(vec![4., 4.0], vec![1, 2]),
-        Tensor::from_f64(vec![4., 1.0], vec![1, 2]),
-        Tensor::from_f64(vec![5., 2.0], vec![1, 2]),
-        Tensor::from_f64(vec![2., 5.0], vec![1, 2]),
-        Tensor::from_f64(vec![5., 6.0], vec![1, 2]),
-        Tensor::from_f64(vec![7., 2.0], vec![1, 2]),
-        Tensor::from_f64(vec![9., 1.0], vec![1, 2]),
+        Tensor::from_f64(&[9., 3.0], &[1, 2]),
+        Tensor::from_f64(&[2., 3.0], &[1, 2]),
+        Tensor::from_f64(&[3., 7.0], &[1, 2]),
+        Tensor::from_f64(&[8., 6.0], &[1, 2]),
+        Tensor::from_f64(&[4., 4.0], &[1, 2]),
+        Tensor::from_f64(&[4., 1.0], &[1, 2]),
+        Tensor::from_f64(&[5., 2.0], &[1, 2]),
+        Tensor::from_f64(&[2., 5.0], &[1, 2]),
+        Tensor::from_f64(&[5., 6.0], &[1, 2]),
+        Tensor::from_f64(&[7., 2.0], &[1, 2]),
+        Tensor::from_f64(&[9., 1.0], &[1, 2]),
     ];
     let targets = vec![
-        Tensor::from_f64(vec![0.0], vec![1, 1]),
-        Tensor::from_f64(vec![1.0], vec![1, 1]),
-        Tensor::from_f64(vec![1.0], vec![1, 1]),
-        Tensor::from_f64(vec![1.0], vec![1, 1]),
-        Tensor::from_f64(vec![1.0], vec![1, 1]),
-        Tensor::from_f64(vec![0.0], vec![1, 1]),
-        Tensor::from_f64(vec![0.0], vec![1, 1]),
-        Tensor::from_f64(vec![1.0], vec![1, 1]),
-        Tensor::from_f64(vec![1.0], vec![1, 1]),
-        Tensor::from_f64(vec![0.0], vec![1, 1]),
-        Tensor::from_f64(vec![0.0], vec![1, 1]),
+        Tensor::from_f64(&[0.0], &[1, 1]),
+        Tensor::from_f64(&[1.0], &[1, 1]),
+        Tensor::from_f64(&[1.0], &[1, 1]),
+        Tensor::from_f64(&[1.0], &[1, 1]),
+        Tensor::from_f64(&[1.0], &[1, 1]),
+        Tensor::from_f64(&[0.0], &[1, 1]),
+        Tensor::from_f64(&[0.0], &[1, 1]),
+        Tensor::from_f64(&[1.0], &[1, 1]),
+        Tensor::from_f64(&[1.0], &[1, 1]),
+        Tensor::from_f64(&[0.0], &[1, 1]),
+        Tensor::from_f64(&[0.0], &[1, 1]),
     ];
 
     let test_data = vec![
-        Tensor::from_f64(vec![6., 6.0], vec![1, 2]),
-        Tensor::from_f64(vec![8., 2.0], vec![1, 2]),
+        Tensor::from_f64(&[6., 6.0], &[1, 2]),
+        Tensor::from_f64(&[8., 2.0], &[1, 2]),
     ];
     let test_targets = vec![
-        Tensor::from_f64(vec![1.0], vec![1, 1]),
-        Tensor::from_f64(vec![0.0], vec![1, 1]),
+        Tensor::from_f64(&[1.0], &[1, 1]),
+        Tensor::from_f64(&[0.0], &[1, 1]),
     ];
 
     for epoch in 1..=epochs {

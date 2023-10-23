@@ -17,8 +17,8 @@ pub struct Linear {
 
 impl Linear {
     pub fn new(in_features: usize, out_features: usize) -> Self {
-        let _weight = Tensor::randn(vec![in_features, out_features]);
-        let _bias = Tensor::randn(vec![out_features, 1]);
+        let _weight = Tensor::randn(&[in_features, out_features]);
+        let _bias = Tensor::randn(&[out_features, 1]);
         Self {
             weight: _weight,
             bias: None,
@@ -60,14 +60,15 @@ pub fn relu(x: Tensor) -> Tensor {
     for item in data.iter_mut() {
         *item = if *item > 0.0 { *item } else { 0.0 }
     }
-    let inner = TensorData::from_op(data, x.shape(), vec![x], Op::ReLU);
-    Tensor::new(inner)
+    let shape = x.shape();
+    let inner = TensorData::from_op(data, vec![x], Op::ReLU);
+    Tensor::new(inner, &shape)
 }
 
 pub fn sigmoid(x: Tensor) -> Tensor {
     let data = ((-x.clone()).exp() + 1.0).pow(-1);
-    let inner = TensorData::from_op(data.item(), data.shape(), vec![x.clone()], Op::Sigmoid(x));
-    Tensor::new(inner)
+    let inner = TensorData::from_op(data.item(), vec![x.clone()], Op::Sigmoid(x));
+    Tensor::new(inner, &data.shape)
 }
 
 pub struct MSELoss {}
@@ -79,8 +80,9 @@ impl MSELoss {
 
     pub fn measure(&self, a: Tensor, b: Tensor) -> Tensor {
         let t = (a - b).pow(2);
-        let inner = TensorData::from_op(t.item(), t.shape(), vec![t], Op::MSE);
-        Tensor::new(inner)
+        let shape = t.shape();
+        let inner = TensorData::from_op(t.item(), vec![t], Op::MSE);
+        Tensor::new(inner, &shape)
     }
 }
 
