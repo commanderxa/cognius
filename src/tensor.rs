@@ -407,7 +407,7 @@ impl Tensor {
         self.inner.borrow().grad.clone()
     }
 
-    pub fn set_data(&self, data: Vec<f64>) {
+    pub(crate) fn set_data(&self, data: Vec<f64>) {
         self.inner.borrow_mut().data = data;
     }
 
