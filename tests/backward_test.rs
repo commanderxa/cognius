@@ -1,7 +1,8 @@
 #[cfg(test)]
 mod tests {
     use cognius::{
-        nn::{optim::SGD, sigmoid, Linear, Module},
+        module::{Forward, Module},
+        nn::{functional as F, optim::SGD, Linear},
         Tensor,
     };
 
@@ -67,20 +68,22 @@ mod tests {
             "MLP".to_owned()
         }
 
-        fn forward(&self, x: Tensor) -> Tensor {
-            let x = self.linear1.forward(x);
-            let x = self.linear2.forward(x);
-            let x = self.linear3.forward(x);
-            let x = self.linear4.forward(x);
-            sigmoid(x)
-        }
-
         fn parameters(&self) -> Vec<Tensor> {
             let mut parameters = self.linear1.parameters();
             parameters.append(&mut self.linear2.parameters());
             parameters.append(&mut self.linear3.parameters());
             parameters.append(&mut self.linear4.parameters());
             parameters
+        }
+    }
+
+    impl Forward for MLP {
+        fn forward(&self, x: Tensor) -> Tensor {
+            let x = self.linear1.forward(x);
+            let x = self.linear2.forward(x);
+            let x = self.linear3.forward(x);
+            let x = self.linear4.forward(x);
+            F::sigmoid(x)
         }
     }
 }

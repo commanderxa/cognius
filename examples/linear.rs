@@ -1,5 +1,6 @@
 use cognius::{
-    nn::{sigmoid, Linear, Module},
+    module::Forward,
+    nn::{functional as F, Linear},
     Tensor,
 };
 
@@ -10,6 +11,6 @@ fn main() {
     println!("IN:\n{x}");
     let out = linear.forward(x);
     println!("OUT:\n{out}");
-    let out = sigmoid(out);
+    let out = F::sigmoid(out);
     println!("OUT:\n{out}");
 }
