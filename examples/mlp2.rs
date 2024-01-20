@@ -1,5 +1,6 @@
 use cognius::{
-    nn::{optim::SGD, Linear, MSELoss, Module},
+    module::{Forward, Module},
+    nn::{optim::SGD, Linear, MSELoss},
     Tensor,
 };
 
@@ -130,19 +131,21 @@ impl Module for MLP {
         "MLP".to_owned()
     }
 
-    fn forward(&self, x: Tensor) -> Tensor {
-        let x = self.linear1.forward(x);
-        // let x = self.linear2.forward(x);
-        // let x = self.linear3.forward(x);
-        // let x = self.linear4.forward(x);
-        x
-    }
-
     fn parameters(&self) -> Vec<Tensor> {
         let parameters = self.linear1.parameters();
         // parameters.append(&mut self.linear2.parameters());
         // parameters.append(&mut self.linear3.parameters());
         // parameters.append(&mut self.linear4.parameters());
         parameters
+    }
+}
+
+impl Forward for MLP {
+    fn forward(&self, x: Tensor) -> Tensor {
+        let x = self.linear1.forward(x);
+        // let x = self.linear2.forward(x);
+        // let x = self.linear3.forward(x);
+        // let x = self.linear4.forward(x);
+        x
     }
 }

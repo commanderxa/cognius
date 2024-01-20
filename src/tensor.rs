@@ -145,6 +145,7 @@ impl Tensor {
         }
     }
 
+    /// Returns an owned copy of tensor strides
     fn stride(&self) -> Vec<usize> {
         self.stride.clone()
     }
@@ -407,6 +408,7 @@ impl Tensor {
         self.inner.borrow().grad.clone()
     }
 
+    /// Replace current data inside the tensor with new `data`
     pub(crate) fn set_data(&self, data: Vec<f64>) {
         self.inner.borrow_mut().data = data;
     }
@@ -531,6 +533,7 @@ impl Tensor {
         self._tensor_to_str(tensor_str, level, range, width)
     }
 
+    /// Inner mechanics of converting `Tensor` into string
     fn _tensor_to_str(
         &self,
         tensor_str: String,
