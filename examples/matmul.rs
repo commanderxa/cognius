@@ -1,4 +1,4 @@
-use cognius::{Tensor, linalg};
+use cognius::{linalg, Tensor};
 
 fn main() {
     let a = Tensor::randn(&[2, 3, 2]);

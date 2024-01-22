@@ -8,6 +8,16 @@ pub trait Dataset<T> {
     /// Returns length of `Dataset`
     fn len(&self) -> usize;
 
+    /// Checks whether the `Dataset` is empty or not
+    /// when method `len` is implemented a good practice is to implement
+    /// `is_empty` also.
+    fn is_empty(&self) -> bool {
+        if self.len() == 0 {
+            return true;
+        }
+        false
+    }
+
     /// Provides a Sample of <T> given the index
     fn sample(&self, index: usize) -> T;
 }

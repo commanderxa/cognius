@@ -5,22 +5,22 @@ mod tests {
     #[test]
     /// Valid shape of the tensor
     fn valid_shape() {
-        Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
-        Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[3, 2]);
-        Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[1, 6]);
-        Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[6, 1]);
+        Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
+        Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[3, 2]);
+        Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[1, 6]);
+        Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[6, 1]);
     }
 
     #[test]
     #[should_panic]
     /// Invalid shape of the tensor
     fn invalid_shape() {
-        Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[1, 3]);
+        Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[1, 3]);
     }
 
     #[test]
     fn zeros_like() {
-        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
+        let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
         let a1 = Tensor::zeros_like(a.clone());
         assert_eq!(0., a1.item().iter().sum(), "zeros_like produces not zeros");
         assert_eq!(
@@ -38,7 +38,7 @@ mod tests {
 
     #[test]
     fn ones_like() {
-        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
+        let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
         let a1 = Tensor::ones_like(a.clone());
         assert_eq!(
             1.,
@@ -65,8 +65,8 @@ mod tests {
     #[test]
     /// Matrix transpose
     fn t_2d() {
-        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
-        let t = Tensor::from_f64(&[0., 3., 1., 4., 2., 5.], &[3, 2]);
+        let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
+        let t = Tensor::tensor(&[0., 3., 1., 4., 2., 5.], &[3, 2]);
         assert_eq!(a.t().shape, t.shape, "Shapes are wrong");
         assert_eq!(a.t().item(), t.item(), "Data is wrong");
     }
@@ -82,7 +82,7 @@ mod tests {
     #[test]
     /// Reshape the tensor
     fn reshape() {
-        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.], &[3, 4]);
+        let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.], &[3, 4]);
         assert_eq!(a.shape, vec![3, 4]);
         let mut _a = a.reshape(&[1, 12]);
         assert_eq!(_a.shape, vec![1, 12]);
@@ -118,14 +118,14 @@ mod tests {
     #[should_panic]
     /// Invalid view of the tensor
     fn reshape_invalid() {
-        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.], &[3, 4]);
+        let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.], &[3, 4]);
         a.reshape(&[4, 5]);
     }
 
     #[test]
     /// View the tensor
     fn view() {
-        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.], &[3, 4]);
+        let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.], &[3, 4]);
         let b = a.view(&[1, 12]);
         assert_eq!(b.shape, vec![1, 12]);
         let c = a.view(&[12, 1]);
@@ -142,7 +142,7 @@ mod tests {
     #[should_panic]
     /// Invalid view of the tensor
     fn view_invalid() {
-        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.], &[3, 4]);
+        let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.], &[3, 4]);
         a.view(&[4, 5]);
     }
 
@@ -156,8 +156,8 @@ mod tests {
 
     #[test]
     fn pow() {
-        let a = Tensor::from_f64(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
-        let b = Tensor::from_f64(&[0., 1., 4., 9., 16., 25.], &[2, 3]);
+        let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
+        let b = Tensor::tensor(&[0., 1., 4., 9., 16., 25.], &[2, 3]);
         assert_eq!(a.pow(2).item(), b.item(), "Pow is wrong");
     }
 

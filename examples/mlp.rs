@@ -11,39 +11,39 @@ fn main() {
     let optim = SGD::new(mlp.parameters(), 1.0);
 
     let data = vec![
-        Tensor::from_f64(&[9., 3.0], &[1, 2]),
-        Tensor::from_f64(&[2., 3.0], &[1, 2]),
-        Tensor::from_f64(&[3., 7.0], &[1, 2]),
-        Tensor::from_f64(&[8., 6.0], &[1, 2]),
-        Tensor::from_f64(&[4., 4.0], &[1, 2]),
-        Tensor::from_f64(&[4., 1.0], &[1, 2]),
-        Tensor::from_f64(&[5., 2.0], &[1, 2]),
-        Tensor::from_f64(&[2., 5.0], &[1, 2]),
-        Tensor::from_f64(&[5., 6.0], &[1, 2]),
-        Tensor::from_f64(&[7., 2.0], &[1, 2]),
-        Tensor::from_f64(&[9., 1.0], &[1, 2]),
+        Tensor::tensor(&[9., 3.0], &[1, 2]),
+        Tensor::tensor(&[2., 3.0], &[1, 2]),
+        Tensor::tensor(&[3., 7.0], &[1, 2]),
+        Tensor::tensor(&[8., 6.0], &[1, 2]),
+        Tensor::tensor(&[4., 4.0], &[1, 2]),
+        Tensor::tensor(&[4., 1.0], &[1, 2]),
+        Tensor::tensor(&[5., 2.0], &[1, 2]),
+        Tensor::tensor(&[2., 5.0], &[1, 2]),
+        Tensor::tensor(&[5., 6.0], &[1, 2]),
+        Tensor::tensor(&[7., 2.0], &[1, 2]),
+        Tensor::tensor(&[9., 1.0], &[1, 2]),
     ];
     let targets = vec![
-        Tensor::from_f64(&[0.0], &[1, 1]),
-        Tensor::from_f64(&[1.0], &[1, 1]),
-        Tensor::from_f64(&[1.0], &[1, 1]),
-        Tensor::from_f64(&[1.0], &[1, 1]),
-        Tensor::from_f64(&[1.0], &[1, 1]),
-        Tensor::from_f64(&[0.0], &[1, 1]),
-        Tensor::from_f64(&[0.0], &[1, 1]),
-        Tensor::from_f64(&[1.0], &[1, 1]),
-        Tensor::from_f64(&[1.0], &[1, 1]),
-        Tensor::from_f64(&[0.0], &[1, 1]),
-        Tensor::from_f64(&[0.0], &[1, 1]),
+        Tensor::tensor(&[0.0], &[1, 1]),
+        Tensor::tensor(&[1.0], &[1, 1]),
+        Tensor::tensor(&[1.0], &[1, 1]),
+        Tensor::tensor(&[1.0], &[1, 1]),
+        Tensor::tensor(&[1.0], &[1, 1]),
+        Tensor::tensor(&[0.0], &[1, 1]),
+        Tensor::tensor(&[0.0], &[1, 1]),
+        Tensor::tensor(&[1.0], &[1, 1]),
+        Tensor::tensor(&[1.0], &[1, 1]),
+        Tensor::tensor(&[0.0], &[1, 1]),
+        Tensor::tensor(&[0.0], &[1, 1]),
     ];
 
     let test_data = vec![
-        Tensor::from_f64(&[6., 6.0], &[1, 2]),
-        Tensor::from_f64(&[8., 2.0], &[1, 2]),
+        Tensor::tensor(&[6., 6.0], &[1, 2]),
+        Tensor::tensor(&[8., 2.0], &[1, 2]),
     ];
     let test_targets = vec![
-        Tensor::from_f64(&[1.0], &[1, 1]),
-        Tensor::from_f64(&[0.0], &[1, 1]),
+        Tensor::tensor(&[1.0], &[1, 1]),
+        Tensor::tensor(&[0.0], &[1, 1]),
     ];
 
     for epoch in 1..=epochs {

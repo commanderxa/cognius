@@ -13,30 +13,12 @@ mod tests {
         fn new() -> Self {
             Self {
                 data: vec![
-                    (
-                        Tensor::from_f64(&[0.0], &[1]),
-                        Tensor::from_f64(&[0.0], &[1]),
-                    ),
-                    (
-                        Tensor::from_f64(&[1.0], &[1]),
-                        Tensor::from_f64(&[2.0], &[1]),
-                    ),
-                    (
-                        Tensor::from_f64(&[2.0], &[1]),
-                        Tensor::from_f64(&[4.0], &[1]),
-                    ),
-                    (
-                        Tensor::from_f64(&[3.0], &[1]),
-                        Tensor::from_f64(&[6.0], &[1]),
-                    ),
-                    (
-                        Tensor::from_f64(&[4.0], &[1]),
-                        Tensor::from_f64(&[8.0], &[1]),
-                    ),
-                    (
-                        Tensor::from_f64(&[5.0], &[1]),
-                        Tensor::from_f64(&[10.0], &[1]),
-                    ),
+                    (Tensor::tensor(&[0.0], &[1]), Tensor::tensor(&[0.0], &[1])),
+                    (Tensor::tensor(&[1.0], &[1]), Tensor::tensor(&[2.0], &[1])),
+                    (Tensor::tensor(&[2.0], &[1]), Tensor::tensor(&[4.0], &[1])),
+                    (Tensor::tensor(&[3.0], &[1]), Tensor::tensor(&[6.0], &[1])),
+                    (Tensor::tensor(&[4.0], &[1]), Tensor::tensor(&[8.0], &[1])),
+                    (Tensor::tensor(&[5.0], &[1]), Tensor::tensor(&[10.0], &[1])),
                 ],
             }
         }
