@@ -14,24 +14,32 @@ struct DataloaderInner<T> {
 }
 
 impl<T> DataloaderInner<T> {
+    /// Set index to 0
     fn reset_index(&mut self) {
         self.index = 0;
     }
 
+    /// Make index bigger by 1
     fn increment_index(&mut self) {
         self.index += 1;
     }
 
+    /// Mix the indices up to obtain random sequence
     fn shuffle_indices(&mut self) {
         self.indices.shuffle(&mut thread_rng());
     }
 }
 
-/// Dataloader
+/// # Dataloader
+///
+/// It is used for data acquisition.
+///
+/// `Dataloader` implements `Iterator`.
 #[derive(Clone)]
 pub struct Dataloader<T>(Rc<RefCell<DataloaderInner<T>>>);
 
 impl<T> Dataloader<T> {
+    /// Create a new `Dataloader`
     pub fn new(dataset: Box<impl Dataset<T> + 'static>, batch_size: usize, shuffle: bool) -> Self {
         // create a list of indices that would correspond to the indices in real data
         let mut indices = vec![];
@@ -51,10 +59,12 @@ impl<T> Dataloader<T> {
         })))
     }
 
+    /// Get batch size
     pub fn batch_size(&self) -> usize {
         self.0.borrow().batch_size
     }
 
+    /// Indicates whether data was shuffled
     pub fn is_shuffle(&self) -> bool {
         self.0.borrow().shuffle
     }

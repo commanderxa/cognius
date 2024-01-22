@@ -72,8 +72,9 @@ impl Tensor {
         Self::new(inner, tensor.shape.as_slice())
     }
 
+    #[allow(clippy::self_named_constructors)]
     /// Create a new tensor from the given data and the shape.
-    pub fn from_f64(data: &[f64], shape: &[usize]) -> Self {
+    pub fn tensor(data: &[f64], shape: &[usize]) -> Self {
         assert_eq!(
             data.len(),
             shape.iter().product(),

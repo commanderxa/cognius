@@ -17,10 +17,10 @@ pub trait Module {
 }
 
 /// # `Forward` Trait
-/// 
+///
 /// Trait that defines specific behavior for modules that work with tensors.
 /// This trait has to be implemented for struct that implement `Module`.
-/// 
+///
 /// `forward` - performs inference in the module (forward propagation)
 pub trait Forward: Module {
     /// Forward (inference) function for module
