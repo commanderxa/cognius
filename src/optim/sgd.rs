@@ -1,16 +1,40 @@
 use crate::Tensor;
 
+use super::Optim;
+
+/// # SGD algorithm
+///
+/// Stochastic Gradient Descent for updating model parameters.
+///
+/// It has:
+/// - parameters of the model
+/// - learning rate
 pub struct SGD {
     parameters: Vec<Tensor>,
     lr: f64,
+    maximize: bool,
 }
 
 impl SGD {
     pub fn new(parameters: Vec<Tensor>, lr: f64) -> Self {
-        Self { parameters, lr }
+        Self {
+            parameters,
+            lr,
+            maximize: false,
+        }
     }
 
-    pub fn step(&self) {
+    pub fn maximize(&mut self) {
+        self.maximize = true;
+    }
+
+    pub fn minimize(&mut self) {
+        self.maximize = false;
+    }
+}
+
+impl Optim for SGD {
+    fn step(&self) {
         for i in 0..self.parameters.len() {
             let data: Vec<f64> = self.parameters[i]
                 .grad()
@@ -28,7 +52,7 @@ impl SGD {
         }
     }
 
-    pub fn zero_grad(&self) {
+    fn zero_grad(&self) {
         for i in 0..self.parameters.len() {
             self.parameters[i].inner.borrow_mut().zero_grad();
         }

@@ -446,7 +446,7 @@ impl Tensor {
     fn _backward(&self) {
         let t = self.inner.borrow();
         if t.grad.is_some() && t._op.is_some() {
-            t._op.as_ref().unwrap().backward(&t);
+            t._op.as_ref().unwrap().backward(&self);
             if !t._prev.is_empty() {
                 for prev in t._prev.clone() {
                     prev._backward()
