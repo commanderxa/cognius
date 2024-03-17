@@ -2,8 +2,9 @@
 mod tests {
     use cognius::{
         module::{Forward, Module},
-        nn::{functional as F, optim::SGD, Linear},
-        Tensor,
+        nn::{self, functional as F, Linear},
+        optim::{Optim, SGD},
+        tensor, Tensor,
     };
 
     #[test]
@@ -21,27 +22,43 @@ mod tests {
         assert_eq!(b.grad().unwrap().iter().sum::<f64>(), 0.0);
     }
 
-    #[ignore]
     #[test]
     fn optim_step() {
-        let mlp = MLP::new([4, 10, 20, 5, 1]);
-        let optim = SGD::new(mlp.parameters(), 1e-3);
+        let mlp = MLP::new([4, 2, 4, 2, 1]);
+        let optim = SGD::new(mlp.parameters(), 1e-1);
         let x = Tensor::randn(&[10, 4]);
+        let criterion = nn::MSELoss::new();
 
-        let out = mlp.forward(x.clone());
+        let mut out = mlp.forward(x.clone());
+        out = out.squeeze(&[]);
+        let loss = criterion.measure(
+            out.clone(),
+            tensor::Tensor::tensor(&[1., 0., 1., 0., 1., 0., 1., 1., 0., 1.], &[10]),
+        );
 
         optim.zero_grad();
-        out.backward();
+        loss.backward();
 
-        let grad_old = mlp.parameters().clone();
+        let old_data = mlp
+            .parameters()
+            .clone()
+            .iter()
+            .map(|x| x.item())
+            .collect::<Vec<Vec<f64>>>();
 
         optim.step();
 
-        for (item, old) in mlp.parameters().iter().zip(grad_old) {
-            assert_ne!(
-                item.grad().unwrap().iter().sum::<f64>(),
-                old.grad().unwrap().iter().sum::<f64>()
-            );
+        let new_data = mlp
+            .parameters()
+            .clone()
+            .iter()
+            .map(|x| x.item())
+            .collect::<Vec<Vec<f64>>>();
+
+        for i in 0..old_data.len() {
+            println!("{:?}", old_data[i]);
+            println!("{:?}\n", new_data[i]);
+            assert_ne!(old_data[i], new_data[i])
         }
     }
 

@@ -7,7 +7,7 @@ use crate::{op::Op, Tensor};
 ///
 /// `Tensor` holds a reference to it, allowing to use the same data.\
 /// See the documentation for `Tensor`.
-pub struct TensorData {
+pub(crate) struct TensorData {
     // stored data
     // it is a single vector that is viewed regarding the shape
     pub data: Vec<f64>,
@@ -19,6 +19,7 @@ pub struct TensorData {
     pub _op: Option<Op>,
 }
 
+#[allow(dead_code)]
 impl TensorData {
     /// Create a new instance of the TensorData.
     pub fn new(shape: &[usize]) -> Self {

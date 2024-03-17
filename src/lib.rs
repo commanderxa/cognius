@@ -4,6 +4,7 @@ pub mod linalg;
 pub mod module;
 pub mod nn;
 mod op;
+pub mod optim;
 pub mod tensor;
 mod tensor_data;
 

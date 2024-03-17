@@ -1,6 +1,7 @@
 use cognius::{
     module::{Forward, Module},
-    nn::{functional as F, optim::SGD, Linear, MSELoss},
+    nn::{functional as F, Linear, MSELoss},
+    optim::{Optim, SGD},
     Tensor,
 };
 
@@ -8,57 +9,52 @@ fn main() {
     let epochs = 10;
     let criterion = MSELoss::new();
     let mlp = MLP::new([2, 1]);
-    let optim = SGD::new(mlp.parameters(), 1.0);
+    let optim = SGD::new(mlp.parameters(), 3e-1);
 
     let data = vec![
-        Tensor::tensor(&[9., 3.0], &[1, 2]),
-        Tensor::tensor(&[2., 3.0], &[1, 2]),
-        Tensor::tensor(&[3., 7.0], &[1, 2]),
-        Tensor::tensor(&[8., 6.0], &[1, 2]),
-        Tensor::tensor(&[4., 4.0], &[1, 2]),
-        Tensor::tensor(&[4., 1.0], &[1, 2]),
-        Tensor::tensor(&[5., 2.0], &[1, 2]),
-        Tensor::tensor(&[2., 5.0], &[1, 2]),
-        Tensor::tensor(&[5., 6.0], &[1, 2]),
-        Tensor::tensor(&[7., 2.0], &[1, 2]),
-        Tensor::tensor(&[9., 1.0], &[1, 2]),
+        Tensor::tensor(&[9., 3.], &[2]),
+        Tensor::tensor(&[2., 3.], &[2]),
+        Tensor::tensor(&[3., 7.], &[2]),
+        Tensor::tensor(&[8., 6.], &[2]),
+        Tensor::tensor(&[4., 4.], &[2]),
+        Tensor::tensor(&[4., 1.], &[2]),
+        Tensor::tensor(&[5., 2.], &[2]),
+        Tensor::tensor(&[2., 5.], &[2]),
+        Tensor::tensor(&[5., 6.], &[2]),
+        Tensor::tensor(&[7., 2.], &[2]),
+        Tensor::tensor(&[9., 1.], &[2]),
     ];
     let targets = vec![
-        Tensor::tensor(&[0.0], &[1, 1]),
-        Tensor::tensor(&[1.0], &[1, 1]),
-        Tensor::tensor(&[1.0], &[1, 1]),
-        Tensor::tensor(&[1.0], &[1, 1]),
-        Tensor::tensor(&[1.0], &[1, 1]),
-        Tensor::tensor(&[0.0], &[1, 1]),
-        Tensor::tensor(&[0.0], &[1, 1]),
-        Tensor::tensor(&[1.0], &[1, 1]),
-        Tensor::tensor(&[1.0], &[1, 1]),
-        Tensor::tensor(&[0.0], &[1, 1]),
-        Tensor::tensor(&[0.0], &[1, 1]),
+        Tensor::tensor(&[0.], &[1]),
+        Tensor::tensor(&[1.], &[1]),
+        Tensor::tensor(&[1.], &[1]),
+        Tensor::tensor(&[1.], &[1]),
+        Tensor::tensor(&[1.], &[1]),
+        Tensor::tensor(&[0.], &[1]),
+        Tensor::tensor(&[0.], &[1]),
+        Tensor::tensor(&[1.], &[1]),
+        Tensor::tensor(&[1.], &[1]),
+        Tensor::tensor(&[0.], &[1]),
+        Tensor::tensor(&[0.], &[1]),
     ];
 
     let test_data = vec![
-        Tensor::tensor(&[6., 6.0], &[1, 2]),
-        Tensor::tensor(&[8., 2.0], &[1, 2]),
+        Tensor::tensor(&[6., 6.], &[2]),
+        Tensor::tensor(&[8., 2.], &[2]),
     ];
-    let test_targets = vec![
-        Tensor::tensor(&[1.0], &[1, 1]),
-        Tensor::tensor(&[0.0], &[1, 1]),
-    ];
+    let test_targets = vec![Tensor::tensor(&[1.], &[1]), Tensor::tensor(&[0.], &[1])];
 
     for epoch in 1..=epochs {
         let mut losses = 0.0;
         for (x, y) in data.iter().zip(targets.clone()) {
             optim.zero_grad();
 
-            let x = x.clone();
+            let x = x.clone().unsqueeze(0);
             let y = y.clone();
-            let out = mlp.forward(x);
-
+            let out = mlp.forward(x).squeeze(&[0]);
             let loss = criterion.measure(out, y);
 
             loss.backward();
-            println!("BACKWARD:\n{:?}", mlp.parameters());
             optim.step();
 
             losses += loss.item()[0];
@@ -67,7 +63,8 @@ fn main() {
     }
 
     for (x, y) in test_data.iter().zip(test_targets.clone()) {
-        let out = mlp.forward(x.clone());
+        let x = x.clone().unsqueeze(0);
+        let out = mlp.forward(x.clone()).squeeze(&[0]);
 
         let loss = criterion.measure(out.clone(), y.clone());
         println!(
@@ -79,22 +76,17 @@ fn main() {
         );
         loss.backward();
     }
+    println!("MODEL: {:?}", mlp.parameters());
 }
 
 struct MLP {
-    linear1: Linear,
-    // linear2: Linear,
-    // linear3: Linear,
-    // linear4: Linear,
+    linear: Linear,
 }
 
 impl MLP {
     pub fn new(features: [usize; 2]) -> Self {
         Self {
-            linear1: Linear::new(features[0], features[1]),
-            // linear2: Linear::new(features[1], features[2]),
-            // linear3: Linear::new(features[2], features[3]),
-            // linear4: Linear::new(features[3], features[4]),
+            linear: Linear::new(features[0], features[1]),
         }
     }
 }
@@ -105,20 +97,14 @@ impl Module for MLP {
     }
 
     fn parameters(&self) -> Vec<Tensor> {
-        let parameters = self.linear1.parameters();
-        // parameters.append(&mut self.linear2.parameters());
-        // parameters.append(&mut self.linear3.parameters());
-        // parameters.append(&mut self.linear4.parameters());
+        let parameters = self.linear.parameters();
         parameters
     }
 }
 
 impl Forward for MLP {
     fn forward(&self, x: Tensor) -> Tensor {
-        let x = self.linear1.forward(x);
-        // let x = self.linear2.forward(x);
-        // let x = self.linear3.forward(x);
-        // let x = self.linear4.forward(x);
+        let x = self.linear.forward(x);
         F::sigmoid(x)
     }
 }
