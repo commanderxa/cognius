@@ -52,7 +52,7 @@ impl Tensor {
     }
 
     /// Creates a new tensor like the inputted one, where all the values are 0.
-    pub fn zeros_like(tensor: Tensor) -> Self {
+    pub fn zeros_like(tensor: &Tensor) -> Self {
         let mut inner = TensorData::new(tensor.shape.as_slice());
         inner.data.fill(0.0);
         Self::new(inner, tensor.shape.as_slice())
@@ -66,7 +66,7 @@ impl Tensor {
     }
 
     /// Creates a new tensor like the inputted one, where all the values are 1.
-    pub fn ones_like(tensor: Tensor) -> Self {
+    pub fn ones_like(tensor: &Tensor) -> Self {
         let mut inner = TensorData::new(tensor.shape.as_slice());
         inner.data.fill(1.0);
         Self::new(inner, tensor.shape.as_slice())

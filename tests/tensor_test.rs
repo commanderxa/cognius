@@ -21,14 +21,14 @@ mod tests {
     #[test]
     fn zeros_like() {
         let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
-        let a1 = Tensor::zeros_like(a.clone());
+        let a1 = Tensor::zeros_like(&a);
         assert_eq!(0., a1.item().iter().sum(), "zeros_like produces not zeros");
         assert_eq!(
             a.shape, a1.shape,
             "zeros_like produce wrong shape of a tensor"
         );
         let b = Tensor::randn(&[4, 10, 8]);
-        let b1 = Tensor::zeros_like(b.clone());
+        let b1 = Tensor::zeros_like(&b);
         assert_eq!(0., b1.item().iter().sum(), "zeros_like produces not zeros");
         assert_eq!(
             b.shape, b1.shape,
@@ -39,7 +39,7 @@ mod tests {
     #[test]
     fn ones_like() {
         let a = Tensor::tensor(&[0., 1., 2., 3., 4., 5.], &[2, 3]);
-        let a1 = Tensor::ones_like(a.clone());
+        let a1 = Tensor::ones_like(&a);
         assert_eq!(
             1.,
             a1.item().iter().product(),
@@ -50,7 +50,7 @@ mod tests {
             "ones_like produce wrong shape of a tensor"
         );
         let b = Tensor::randn(&[4, 10, 8]);
-        let b1 = Tensor::ones_like(b.clone());
+        let b1 = Tensor::ones_like(&b);
         assert_eq!(
             1.,
             b1.item().iter().product(),
